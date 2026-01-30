@@ -1,3 +1,21 @@
+**Cấu trúc dự án**
+
+        .
+        ├── README.md
+        ├── __pycache__
+        │   └── code.cpython-312.pyc
+        ├── data                      # File dataset gốc - không chỉnh sửa !!
+        │   └── jewelry.csv
+        ├── main.ipynb                # File chính để tổng hợp kết quả
+        ├── notebooks                 # Nơi để mỗi người nháp code 
+        │   ├── tin.ipynb
+        │   ├── toan.ipynb
+        │   └── ton.ipynb
+        ├── requirements.txt
+        ├── setting.json
+        └── src                       # Trong đây chứa các hàm dùng chung 
+            └── __init__.py
+            
 **Cấu hình trước khi chạy**
 
     1. Cài extension Jupyter của Microsoft
@@ -5,6 +23,8 @@
     2. Trên góc phải, chọn Kernel, và tạo một .venv mới
 
     3. Sau đó chọn cài đặt tất cả trong requirements.txt
+
+    4. Lưu ý khi mỗi người tự code (trong các file toan.ipynb, ton.ipynb) thì chọn Kernel khớp với Kernel đã chọn ở ngoài thư mục gốc vừa làm. 
 
 <img width="1452" height="283" alt="image" src="https://github.com/user-attachments/assets/d3e7cd5d-80d7-4982-91c5-ab7df0339376" />
 
@@ -51,6 +71,7 @@
     
   
   
+
 
 
 
