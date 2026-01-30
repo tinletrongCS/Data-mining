@@ -15,6 +15,8 @@
         ├── setting.json
         └── src                       # Trong đây chứa các hàm dùng chung 
             └── __init__.py
+            ├── preprocessing.py      # Các hàm tiền xử lý dữ liệu
+            └── visualization.py      # Vẽ hình 
             
 **Cấu hình trước khi chạy**
 
@@ -81,6 +83,7 @@
     
   
   
+
 
 
 
