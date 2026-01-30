@@ -1,3 +1,12 @@
+**Cấu hình trước khi chạy**
+
+    Cài extension Jupyter của Microsoft
+
+    Trên góc phải, chọn Kernel, và tạo một .venv mới
+    <img width="1452" height="283" alt="image" src="https://github.com/user-attachments/assets/c03b77fa-ac42-452d-8e7f-8a1dbe27c79b" />
+
+    Sau đó chọn cài đặt tất cả trong requirements.txt
+
 **Lưu ý chạy trong WSL**
 
     python3 -m venv venv
@@ -41,3 +50,4 @@
     
   
   
+
