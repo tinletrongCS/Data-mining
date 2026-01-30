@@ -9,15 +9,12 @@
 
     Sau đó chọn cài đặt tất cả trong requirements.txt
 
-**Lưu ý chạy trong WSL**
+**Tạo thử từng cell code và chạy thử xem kết quả**
 
-    python3 -m venv venv
-    
-    source venv/bin/activate
-    
-    pip install -r requirements.txt 
-    
-    python3 jewelry.py
+<img width="1452" height="552" alt="image" src="https://github.com/user-attachments/assets/9c1422c9-9fb6-4514-8ba8-b3a897103c0d" />
+
+    Nó hiện từng cell như vầy, code cell nào thì bấm chạy cell đó.
+
 
 **Tạo 1 nhánh mới và commit lên**
 
@@ -52,5 +49,6 @@
     
   
   
+
 
 
