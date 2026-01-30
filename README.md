@@ -38,6 +38,15 @@
 
     Nó hiện từng cell như vầy, code cell nào thì bấm chạy cell đó.
 
+**Trong file src**
+
+    Khi thêm một hàm mới trong mỗi file của ae, ví dụ Tín thêm hàm func_1() để xử lý, chạy test xong nếu thấy OK thì copy hàm đó vào src/preprocessing.pypy.
+
+    Để tái sử dụng, khi Tôn thao tác trong ton.ipynb thì gọi 'from src.preprocessing import func_1'
+
+    Good luck ae.
+
+
 
 **Tạo 1 nhánh mới và commit lên**
 
@@ -72,6 +81,7 @@
     
   
   
+
 
 
 
