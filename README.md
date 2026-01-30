@@ -33,7 +33,8 @@
 
 **Tạo thử từng cell code và chạy thử xem kết quả**
 
-<img width="1452" height="552" alt="image" src="https://github.com/user-attachments/assets/9c1422c9-9fb6-4514-8ba8-b3a897103c0d" />
+<img width="1446" height="405" alt="image" src="https://github.com/user-attachments/assets/1f5828bb-06a4-4c89-af02-92673173471b" />
+
 
     Nó hiện từng cell như vầy, code cell nào thì bấm chạy cell đó.
 
@@ -71,6 +72,7 @@
     
   
   
+
 
 
 
