@@ -1,8 +1,8 @@
 **Cấu hình trước khi chạy**
 
-    Cài extension Jupyter của Microsoft
+    1. Cài extension Jupyter của Microsoft
 
-    Trên góc phải, chọn Kernel, và tạo một .venv mới
+    2. Trên góc phải, chọn Kernel, và tạo một .venv mới
 
 <img width="1452" height="283" alt="image" src="https://github.com/user-attachments/assets/d3e7cd5d-80d7-4982-91c5-ab7df0339376" />
 
@@ -49,6 +49,7 @@
     
   
   
+
 
 
 
