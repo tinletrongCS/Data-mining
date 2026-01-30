@@ -4,10 +4,12 @@
 
     2. Trên góc phải, chọn Kernel, và tạo một .venv mới
 
+    3. Sau đó chọn cài đặt tất cả trong requirements.txt
+
 <img width="1452" height="283" alt="image" src="https://github.com/user-attachments/assets/d3e7cd5d-80d7-4982-91c5-ab7df0339376" />
 
 
-    Sau đó chọn cài đặt tất cả trong requirements.txt
+   
 
 **Tạo thử từng cell code và chạy thử xem kết quả**
 
@@ -49,6 +51,7 @@
     
   
   
+
 
 
 
