@@ -49,6 +49,11 @@
 
 <img width="1863" height="553" alt="image" src="https://github.com/user-attachments/assets/3631caf3-86be-4cda-b74d-8dc8010e0a13" />
 
+     Khi có thay đổi bên file trong src/ thì muốn chạy lại: 
+
+<img width="1042" height="637" alt="image" src="https://github.com/user-attachments/assets/81b80be9-74e3-467e-b3db-dd9415721917" />
+
+
 
 **Tạo 1 nhánh mới và commit lên**
 
@@ -83,6 +88,7 @@
     
   
   
+
 
 
 
