@@ -18,7 +18,7 @@
             ├── preprocessing.py      # Các hàm tiền xử lý dữ liệu
             └── visualization.py      # Vẽ hình 
             
-**Cấu hình trước khi chạy**
+**Cấu hình trước khi chạy - Khuyến khích chạy trong WSL thì tốc độ restart Kernel sẽ nhanh hơn**
 
     1. Cài extension Jupyter của Microsoft
 
@@ -49,8 +49,12 @@
 
 <img width="1863" height="553" alt="image" src="https://github.com/user-attachments/assets/3631caf3-86be-4cda-b74d-8dc8010e0a13" />
 
+     Khi có thay đổi bên file trong src/ thì muốn chạy lại: 
 
-**Tạo 1 nhánh mới và commit lên**
+<img width="1042" height="637" alt="image" src="https://github.com/user-attachments/assets/81b80be9-74e3-467e-b3db-dd9415721917" />
+
+
+**[git1] - Tạo 1 nhánh mới và commit lên**
 
     git checkout -b <tên_nhánh_mới>
     
@@ -60,7 +64,7 @@
     
     git push origin <tên_nhánh_mới>
 
-**Trước khi tạo Pull Request cần check xem có bị conflict không**
+**[git2] - Trước khi tạo Pull Request cần check xem có bị conflict không**
 
     git checkout dev 
 
@@ -83,6 +87,9 @@
     
   
   
+
+
+
 
 
 
