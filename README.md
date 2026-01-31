@@ -18,7 +18,7 @@
             ├── preprocessing.py      # Các hàm tiền xử lý dữ liệu
             └── visualization.py      # Vẽ hình 
             
-**Cấu hình trước khi chạy**
+**Cấu hình trước khi chạy - Khuyến khích chạy trong WSL thì tốc độ restart Kernel sẽ nhanh hơn**
 
     1. Cài extension Jupyter của Microsoft
 
@@ -54,7 +54,6 @@
 <img width="1042" height="637" alt="image" src="https://github.com/user-attachments/assets/81b80be9-74e3-467e-b3db-dd9415721917" />
 
 
-
 **Tạo 1 nhánh mới và commit lên**
 
     git checkout -b <tên_nhánh_mới>
@@ -88,6 +87,7 @@
     
   
   
+
 
 
 
