@@ -30,8 +30,7 @@
 
 <img width="1452" height="283" alt="image" src="https://github.com/user-attachments/assets/d3e7cd5d-80d7-4982-91c5-ab7df0339376" />
 
-
-   
+**Nếu vào VS Code mở các file .ipynb lên mà nó bị treo thì đóng VS Code rồi vào lại**
 
 **Tạo thử từng cell code và chạy thử xem kết quả**
 
@@ -48,6 +47,7 @@
 
     Good luck ae.
 
+<img width="1863" height="553" alt="image" src="https://github.com/user-attachments/assets/3631caf3-86be-4cda-b74d-8dc8010e0a13" />
 
 
 **Tạo 1 nhánh mới và commit lên**
@@ -83,6 +83,7 @@
     
   
   
+
 
 
 
