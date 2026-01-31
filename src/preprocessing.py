@@ -1,6 +1,6 @@
 # Test gọi hàm
 def func_1():
-    print("From src/visualization.py:", 'xin chao')
+    print("From src/preprocessing.py:", 'xin chao')
 
 import pandas as pd
 
