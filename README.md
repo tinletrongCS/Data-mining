@@ -54,7 +54,7 @@
 <img width="1042" height="637" alt="image" src="https://github.com/user-attachments/assets/81b80be9-74e3-467e-b3db-dd9415721917" />
 
 
-**Tạo 1 nhánh mới và commit lên**
+**[git1] - Tạo 1 nhánh mới và commit lên**
 
     git checkout -b <tên_nhánh_mới>
     
@@ -64,7 +64,7 @@
     
     git push origin <tên_nhánh_mới>
 
-**Trước khi tạo Pull Request cần check xem có bị conflict không**
+**[git2] - Trước khi tạo Pull Request cần check xem có bị conflict không**
 
     git checkout dev 
 
@@ -87,6 +87,7 @@
     
   
   
+
 
 
 
