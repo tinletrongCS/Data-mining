@@ -17,8 +17,41 @@
             └── __init__.py
             ├── preprocessing.py      # Các hàm tiền xử lý dữ liệu
             └── visualization.py      # Vẽ hình 
-            
-**Cấu hình trước khi chạy - Khuyến khích chạy trong WSL thì tốc độ restart Kernel sẽ nhanh hơn**
+
+**Chạy dự án từ đầu**
+
+    0. Clone dự án về máy (URL: https://github.com/tinletrongCS/Data-mining.git)
+
+    1. Nhấn Ctrl + Shifft + P, chọn Python: Select Interpreter
+
+<img width="746" height="443" alt="image" src="https://github.com/user-attachments/assets/a718cdf1-b799-450f-94d1-06c7829e1d7b" />
+
+    2. Tạo môi trường ảo mới 
+
+<img width="742" height="263" alt="image" src="https://github.com/user-attachments/assets/be6a5e33-624c-4eb9-93d5-933e05c7cfd4" />
+
+    3. Chọn tiếp Venv
+
+<img width="742" height="97" alt="image" src="https://github.com/user-attachments/assets/29e48aaf-78d1-4cb8-a27c-83a708d3a4f5" />
+
+    4. Chọn python.exe nằm trong AppData
+
+<img width="753" height="247" alt="image" src="https://github.com/user-attachments/assets/223ade53-2e30-47f7-af07-ef672171acb8" />
+
+    5. Click chọn cài đặt tất cả thư viện trong requirements.txt, chờ cho nó tải xong (tầm 3-5 phút tùy máy)
+
+<img width="748" height="111" alt="image" src="https://github.com/user-attachments/assets/398d3760-c82f-4c25-af86-0905ccb1661e" />
+
+    6. Sau đó chọn Kernel -> Python Environment
+
+<img width="732" height="137" alt="image" src="https://github.com/user-attachments/assets/d45cf64e-3fb7-4ec1-b26a-1ccb1811739f" />
+
+    7. Chọn cái có dấu sao như vầy 
+
+<img width="751" height="277" alt="image" src="https://github.com/user-attachments/assets/671eba1a-a64f-49f0-bf3e-7b440a652fa4" />
+
+
+**Cấu hình trước khi chạy - Khuyến khích chuyển thư mục sang bộ nhớ của WSL thì tốc độ restart Kernel sẽ nhanh hơn**
 
     1. Cài extension Jupyter của Microsoft
 
@@ -87,6 +120,8 @@
     
   
   
+
+
 
 
 
