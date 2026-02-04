@@ -1,8 +1,12 @@
+import pandas as pd
+
+
 # Test gọi hàm
 def func_1():
     print("From src/preprocessing.py:", 'xin chao')
 
-import pandas as pd
+def func_2():
+    print("Xin chao 123")
 
 # =============================================================================
 # 1. LÀM SẠCH CƠ BẢN VÀ ĐỔI TÊN CỘT
@@ -70,6 +74,7 @@ def clean_product_attributes(df: pd.DataFrame) -> pd.DataFrame:
     """
     pass
 
+# Chạy theo pipeline
 def run_phase_1_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     """
     Hàm tổng hợp gọi lần lượt các bước làm sạch cơ bản theo thứ tự.
@@ -167,7 +172,7 @@ def master_preprocessing_pipeline(filepath: str) -> dict:
     """
     # 1. Load Data
     # 2. Basic Cleaning (Phase 1)
-    # 3. Outlier Removal (Phase 4 - nên làm sớm để sạch data)
+    # 3. Outlier Removal (Phase 4)
     # 4. Feature Extraction (Phase 2)
     # 5. Transformation (Phase 3)
     pass
