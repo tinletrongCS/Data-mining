@@ -6,5 +6,6 @@ matplotlib
 seaborn
 jupyter
 ipykernel
+jupytext
 
 

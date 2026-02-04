@@ -1,6 +1,6 @@
 .venv
 src/tempCodeRunnerFile.py
-
+Makefile
 __pycache__/
 *.pyc
 
