@@ -7,6 +7,9 @@ import numpy as np
 sns.set_theme(style="whitegrid")
 plt.rcParams['figure.figsize'] = (12, 6)
 
+def save(save_path):
+    plt.savefig(save_path, bbox_inches='tight')
+    print(f"Đã lưu biểu đồ tại: {save_path}")
 
 def plot_price_distribution(df: pd.DataFrame, save_path=None):
     """
@@ -23,12 +26,11 @@ def plot_price_distribution(df: pd.DataFrame, save_path=None):
     plt.ylabel('Số lượng sản phẩm', fontsize=12)
 
     if save_path:
-        plt.savefig(save_path, bbox_inches='tight')
-        print(f"Đã lưu biểu đồ tại: {save_path}")
+        save(save_path)
     plt.show()
 
 
-def plot_top_categories(df: pd.DataFrame, column='category_code', top_n=10, save_path=None):
+def plot_top_categories(df: pd.DataFrame, column, top_n=10, save_path=None):
     """
     TODO - Vẽ biểu đồ Top các danh mục/thương hiệu phổ biến nhất.
     """
@@ -44,16 +46,15 @@ def plot_top_categories(df: pd.DataFrame, column='category_code', top_n=10, save
     plt.ylabel(column, fontsize=12)
 
     if save_path:
-        plt.savefig(save_path, bbox_inches='tight')
-        print(f"Đã lưu biểu đồ tại: {save_path}")
+        save(save_path)
     plt.show()
 
 
 def plot_correlation_heatmap(df: pd.DataFrame, save_path=None):
     """
-    TODO - Vẽ biểu đồ nhiệt thể hiện sự tương quan giữa các biến SỐ (Numerical).
+    TODO - Vẽ biểu đồ nhiệt thể hiện sự tương quan giữa các biến SỐ
     """
-    # 1. Chỉ lấy các cột số (loại bỏ cột string như 'jewelry.gold')
+    # Chỉ lấy các cột số (loại bỏ cột string như 'jewelry.gold')
     numeric_df = df.select_dtypes(include=[np.number])
 
     # Loại bỏ các cột ID vì ID là số ngẫu nhiên, không có ý nghĩa tương quan
@@ -76,6 +77,34 @@ def plot_correlation_heatmap(df: pd.DataFrame, save_path=None):
     plt.title('Ma trận tương quan giữa các biến số', fontsize=15, fontweight='bold')
 
     if save_path:
-        plt.savefig(save_path, bbox_inches='tight')
-        print(f"Đã lưu biểu đồ tại: {save_path}")
+        save(save_path)
+    plt.show()
+
+
+def plot_preprocessing_comparison(df_raw: pd.DataFrame, df_clean: pd.DataFrame, save_path=None):
+    """
+    TODO Vẽ biểu đồ so sánh trước và sau khi thực hiện tiền xử lý
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(18, 6))
+
+    raw_price = pd.to_numeric(df_raw['price'], errors='coerce').fillna(0)
+    sns.histplot(raw_price, bins=50, ax=axes[0], color='gray')
+    axes[0].set_title('Trước xử lý: Dữ liệu bị lệch (Skewed)', fontsize=14, color='red')
+    axes[0].set_xlabel('Giá (USD)')
+    axes[0].set_ylabel('Số lượng')
+
+
+    if 'price' in df_clean.columns:
+        limit_99 = df_clean['price'].quantile(0.99)
+        df_visual = df_clean[df_clean['price'] <= limit_99]
+
+        sns.histplot(df_visual['price'], bins=50, kde=True, ax=axes[1], color='teal')
+
+        axes[1].set_title(f'Sau xử lý: Phân phối giá (Zoom vào vùng < {int(limit_99)}$)', fontsize=14, color='green')
+        axes[1].set_xlabel('Giá (USD)')
+        axes[1].set_ylabel('Số lượng')
+
+    if save_path:
+        save(save_path)
+    plt.tight_layout()
     plt.show()

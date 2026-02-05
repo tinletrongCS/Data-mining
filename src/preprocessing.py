@@ -161,14 +161,9 @@ def encode_and_scale_features(df: pd.DataFrame) -> pd.DataFrame:
 
     le = LabelEncoder()
     for col in existing_cats:
-        # Tạo cột mới có đuôi _encoded (giữ cột gốc để con người còn đọc được)
-        # Chuyển sang chuỗi để tránh lỗi nếu còn sót số
         df[f'{col}_encoded'] = le.fit_transform(df[col].astype(str))
 
-    # 2. CHUẨN HÓA (SCALING): Đưa về thang đo 0-1
-    # Chỉ chuẩn hóa các cột số có biên độ lớn
     num_cols = ['price', 'quantity']
-    # Nếu đã chạy Phase 2 thì có thêm 'hour', 'day'... có thể scale nếu cần
     if 'hour' in df.columns:
         num_cols.append('hour')
 
