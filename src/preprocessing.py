@@ -1,83 +1,70 @@
 import pandas as pd
-
-
-# Test gọi hàm
-def func_1():
-    print("From src/preprocessing.py:", 'xin chao')
-
-def func_2():
-    print("Xin chao 123")
-
 # =============================================================================
 # 1. LÀM SẠCH CƠ BẢN VÀ ĐỔI TÊN CỘT
-# Chú ý: Khi gọi các hàm ở đây thì truyền tham số kiểu bảng, truyền vào dataset 
+# Chú ý: Khi gọi các hàm ở đây thì truyền tham số kiểu bảng, truyền vào dataset
 # =============================================================================
 
 def format_id_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Xử lý nhóm cột định danh (IDs).
-    
-    Nhiệm vụ:
-    - Chuyển đổi order_id, product_id, category_id, branch_id, user_id sang string
-    - Đảm bảo các ID lớn không bị lỗi hiển thị (e+18).
+    TODO: Xử lý nhóm cột định danh (IDs) -> chuyển thành string hết
     """
-    pass
+    id_columns = ['order_id', 'product_id', 'category_id', 'brand_id', 'user_id']
+    existing_columns = list(filter(lambda col: col in df.columns, id_columns))
+    for col in existing_columns:
+        df[col] = df[col].fillna('unknown')
+        df[col] = df[col].astype(str).str.replace(r'\.0$', '', regex=True)
+    return df
 
 def format_datetime_column(df: pd.DataFrame) -> pd.DataFrame:
     """
-    - Chuyển đổi event_time sang kiểu dữ liệu datetime 
-    - Xử lý lỗi nếu định dạng thời gian không hợp lệ 
+    TODO: Chuyển đổi event_time sang kiểu dữ liệu datetime
     """
-    pass
+    if 'event_time' in df.columns:
+        df['event_time'] = pd.to_datetime(df['event_time'], errors='coerce')
+    return df
 
 def format_price_column(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Xử lý cột giá (price).
-    
-    Nhiệm vụ:
-    - Ép kiểu sang float.
-    - Có thể xử lý nhanh các giá trị price < 0 
+    TODO: Xử lý cột giá (price) -> float
     """
-    pass
+    if 'price' in df.columns:
+        df['price'] = pd.to_numeric(df['price'], errors='coerce').fillna(0.0)
+    return df
 
 def drop_missing_critical_ids(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Xử lý dòng thiếu dữ liệu quan trọng.
-    
-    Nhiệm vụ:
-    - Kiểm tra user_id và product_id.
-    - Nếu dòng nào thiếu 1 trong 2 trường này -> Xóa dòng.
-    - Lý do: Không thể định danh giao dịch nếu thiếu người mua hoặc vật được mua.
+    TODO: Kiểm tra user_id và product_id -> Thiếu cả 2 thì bỏ
     """
-    pass
+    critical_cols = ['user_id', 'product_id']
+    target_cols = [col for col in critical_cols if col in df.columns]
+    if target_cols:
+        mask = (df[target_cols] == 'unknown').any(axis=1)
+        df = df[~mask].copy()
+    return df
 
 def clean_category_column(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Làm sạch đặc thù cột category_code.
-    
-    Nhiệm vụ:
-    - Điền khuyết (fillna) bằng 'unknown'.
-    - Xử lý chuỗi: Loại bỏ tiền tố 'jewelry.' (VD: 'jewelry.ring' -> 'ring').
-    - Ép kiểu sang string.
+    TODO: Xử lý chuỗi: Loại bỏ tiền tố 'jewelry.' (VD: 'jewelry.ring' -> 'ring').
     """
-    pass
+    if 'category_code' in df.columns:
+        df['category_code'] = df['category_code'].fillna('unknown').astype(str)
+        df['category_code'] = df['category_code'].apply(lambda x: x.split('.')[-1] if '.' in x else x)
+    return df
 
 def clean_product_attributes(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Làm sạch nhóm thuộc tính sản phẩm (Metadata).
-    
-    Columns: gender, color, metal, gem
-    Nhiệm vụ:
-    - Điền khuyết (fillna) bằng 'unknown'.
+    TODO: Columns: gender, color, metal, gem
     - Chuyển về lowercase để đồng nhất (Gold hay gold gì đều như nhau nha).
-    - Ép kiểu sang string.
     """
-    pass
+    cols = ['gender', 'color', 'metal', 'gem']
+    for col in cols:
+        if col in df.columns:
+            df[col] = df[col].fillna('unknown').astype(str).str.lower()
+    return df
 
-# Chạy theo pipeline
 def run_phase_1_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Hàm tổng hợp gọi lần lượt các bước làm sạch cơ bản theo thứ tự.
+    TODO: Hàm tổng hợp gọi lần lượt các bước làm sạch cơ bản theo thứ tự.
     """
     df = format_id_columns(df)
     df = format_datetime_column(df)
@@ -95,7 +82,7 @@ def run_phase_1_cleaning(df: pd.DataFrame) -> pd.DataFrame:
 
 def extract_time_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Tạo các cột đặc trưng mới từ cột 'event_time'.
+    TODO: Tạo các cột đặc trưng mới từ cột 'event_time'.
     
     Output mong đợi gồm các cột:
     - hour: Giờ trong ngày (0-23).
@@ -106,6 +93,11 @@ def extract_time_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     pass
 
+def run_phase_2_cleaning(df: pd.DataFrame) -> pd.DataFrame:
+    df = extract_time_features(df)
+
+    return df
+
 # =============================================================================
 # 3. BIẾN ĐỔI DỮ LIỆU (TRANSFORMATION)
 # Mục tiêu: Tạo ra các dataset con phù hợp cho từng thuật toán (Luật kết hợp, Gom cụm).
@@ -113,7 +105,7 @@ def extract_time_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def transform_for_association_rules(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Chuẩn bị dữ liệu cho bài toán Khai phá luật kết hợp (Association Rules).
+    TODO: Chuẩn bị dữ liệu cho bài toán Khai phá luật kết hợp (Association Rules).
     
     Yêu cầu:
     - Lọc các đơn hàng có quantity > 0.
@@ -125,7 +117,7 @@ def transform_for_association_rules(df: pd.DataFrame) -> pd.DataFrame:
 
 def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Chuẩn bị dữ liệu cho bài toán Gom cụm khách hàng (Clustering) & Phân loại.
+    TODO: Chuẩn bị dữ liệu cho bài toán Gom cụm khách hàng (Clustering) & Phân loại.
     
     Yêu cầu:
     - Gom nhóm theo 'user_id'.
@@ -138,6 +130,11 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
     """
     pass
 
+def run_phase_3_cleaning(df: pd.DataFrame) -> pd.DataFrame:
+    df = transform_for_association_rules(df)
+    df = transform_for_user_profile(df)
+
+    return df
 # =============================================================================
 # 4. XỬ LÝ NHIỄU & NGOẠI LAI (OUTLIERS)
 # Mục tiêu: Loại bỏ các dữ liệu rác làm sai lệch mô hình.
@@ -145,7 +142,7 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
 
 def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Loại bỏ các dòng dữ liệu bất thường.
+    TODO: Loại bỏ các dòng dữ liệu bất thường.
     
     Yêu cầu:
     - price <= 0: Xóa.
@@ -154,13 +151,17 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
     """
     pass
 
+def run_phase_4_cleaning(df: pd.DataFrame) -> pd.DataFrame:
+    df = remove_outliers(df)
+
+    return df
 # =============================================================================
 # PIPELINE
 # =============================================================================
 
 def master_preprocessing_pipeline(filepath: str) -> dict:
     """
-    Hàm chạy toàn bộ quy trình tiền xử lý từ A-Z.
+    TODO: Hàm chạy toàn bộ quy trình tiền xử lý.
     
     Returns:
         Một dictionary chứa các DataFrame đã xử lý sẵn sàng cho từng bài toán:
