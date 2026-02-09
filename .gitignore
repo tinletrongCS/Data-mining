@@ -29,3 +29,7 @@ Makefile
 
 # Đồng bộ phiên bản
 pip freeze > requirements.txt
+
+# Không push các file .pkl lên
+data/processed
+*.pkl
