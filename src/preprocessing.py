@@ -77,8 +77,8 @@ def run_phase_1_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # =============================================================================
-# 2. TRÍCH XUẤT ĐẶC TRƯNG THỜI GIAN
-# Mục tiêu: Phục vụ phân tích xu hướng mua sắm
+# TODO 2. TRÍCH XUẤT ĐẶC TRƯNG THỜI GIAN
+#   Mục tiêu: Phục vụ phân tích xu hướng mua sắm
 # =============================================================================
 
 def extract_time_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -91,7 +91,22 @@ def extract_time_features(df: pd.DataFrame) -> pd.DataFrame:
         - month: Tháng.
         - is_weekend: 1 nếu là cuối tuần (T7 + CN), 0 nếu ngày thường (T2-T6).
     """
-    pass
+    # BƯỚC QUAN TRỌNG: Ép kiểu lại lần nữa để chắc chắn nó là datetime
+    # Nếu nó đã là datetime rồi thì lệnh này chạy rất nhanh, không sao cả.
+    if not pd.api.types.is_datetime64_any_dtype(df['event_time']):
+        df['event_time'] = pd.to_datetime(df['event_time'], errors='coerce')
+
+    df['hour'] = df['event_time'].dt.hour
+    df['day'] = df['event_time'].dt.day
+    df['month'] = df['event_time'].dt.month
+    # dayofweek trả về số: 0 (Thứ 2) -> 6 (Chủ nhật)
+    df['day_of_week'] = df['event_time'].dt.dayofweek
+
+    # hiện tên thứ (Monday, Tuesday...) để vẽ biểu đồ cho đẹp
+    df['weekday_name'] = df['event_time'].dt.day_name()
+    df['is_weekend'] = df['day_of_week'].apply(lambda x: 1 if x >= 5 else 0)
+
+    return df
 
 def run_phase_2_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     df = extract_time_features(df)
@@ -99,8 +114,8 @@ def run_phase_2_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # =============================================================================
-# 3. BIẾN ĐỔI DỮ LIỆU (TRANSFORMATION)
-# Mục tiêu: Tạo ra các dataset con phù hợp cho từng thuật toán (Luật kết hợp, Gom cụm).
+# TODO 3. BIẾN ĐỔI DỮ LIỆU (TRANSFORMATION)
+#   Mục tiêu: Tạo ra các dataset con phù hợp cho từng thuật toán (Luật kết hợp, Gom cụm).
 # =============================================================================
 def create_price_segments(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -131,10 +146,24 @@ def transform_for_association_rules(df: pd.DataFrame) -> pd.DataFrame:
         - Lọc các đơn hàng có quantity > 0.
         - Gom nhóm theo 'order_id'.
         - Output: Một DataFrame mà mỗi dòng là một đơn hàng, chứa list các sản phẩm (product_id hoặc category_code).
-          VD: Order_1 -> ['Ring', 'Earring']
+        VD: Order_1 -> ['Ring', 'Earring']
+        earring: Bông tai.
+        pendant: Mặt dây chuyền.
+        necklace: Vòng cổ / Dây chuyền.
+        ring: Nhẫn.
+        bracelet: Vòng tay / Lắc tay.
+        brooch: Ghim cài áo
+        unknown: Các sản phẩm chưa được phân loại rõ ràng trong hệ thống.
     """
-    pass
+    # Lọc các đơn hàng hợp lệ (quantity > 0) và category_code khác 'unknown'
+    df_rules = df[(df['quantity'] > 0) & (df['category_code'] != 'unknown')].copy()
+    # Gom nhóm theo order_id
+    df_rules = df_rules.groupby('order_id')['category_code'].apply(lambda x: list(set(x))).reset_index()#  Bỏ reset_index() sẽ bị lỗi khi chạy apriori vì không còn là DataFrame nữa.
+    # Đổi tên cột cho dễ hiểu
+    df_rules.rename(columns={'category_code': 'item_list'}, inplace=True) # Không có inplace=True sẽ không đổi tên cột được
+    return df_rules
 
+# Hàm này quan trọng
 def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
     """
     TODO: Chuẩn bị dữ liệu cho bài toán Gom cụm khách hàng (Clustering) & Phân loại.
@@ -147,8 +176,50 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
             + recency (Số ngày từ lần mua cuối)
             + favorite_gem (Mode gem)
     """
-    pass
+    valid_df = df[
+        (df['user_id'].notna()) &
+        (df['order_id'].notna()) &
+        (df['price'] > 0)
+        ].copy()
+    if valid_df.empty:
+        return pd.DataFrame()  # Trả về df rỗng nếu không có dữ liệu hợp lệ
+    # Xác định mốc thời gian cuối cùng từ tập dữ liệu đã lọc
+    last_time_in_data = valid_df['event_time'].max()
 
+    # Định nghĩa hàm lấy danh sách Favorite Gems (Mode)
+    def favorite_gem_list(x):
+        counts = x.value_counts()
+        if counts.empty: return ['unknown']
+        max_count = counts.max()
+        return counts[counts == max_count].index.tolist()
+
+    # Gom nhóm và tính toán (Aggregation)
+    agg_rules = {
+        'price': 'sum',
+        'order_id': 'nunique',
+        'event_time': 'max',
+        'gem': favorite_gem_list
+    }
+    df_users = valid_df.groupby('user_id').agg(agg_rules).reset_index()
+    # Đổi tên và tính toán các chỉ số
+    df_users.rename(columns={
+        'price': 'total_spend',
+        'order_id': 'total_orders',
+        'event_time': 'last_purchase_date',
+        'gem': 'favorite_gems'
+    }, inplace=True)
+    # Recency: Ngày cuối file - Ngày cuối của user
+    df_users['recency'] = (last_time_in_data - df_users['last_purchase_date']).dt.days
+    # Tổng chiTổng đơn
+    df_users['avg_order_value'] = (df_users['total_spend'] / df_users['total_orders']).round(
+        2)  # Tiền sẵn sàng mua cho mỗi đơn hàng
+    # Tổng đơn
+    df_users['total_spend'] = df_users['total_spend'].round(2)
+    # Xử lý an toàn cho Recency
+    df_users['recency'] = df_users['recency'].clip(lower=0)  # Đảm bảo không có giá trị âm do lệch thời gian
+    # Loại bỏ cột ngày mua cuối vì mô hình đã có rency
+    df_users = df_users.drop(columns=['last_purchase_date'])
+    return df_users
 
 def encode_and_scale_features(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -182,8 +253,8 @@ def run_phase_3_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 # =============================================================================
-# 4. XỬ LÝ NHIỄU & NGOẠI LAI (OUTLIERS)
-# Mục tiêu: Loại bỏ các dữ liệu rác làm sai lệch mô hình.
+# TODO - 4. XỬ LÝ NHIỄU & NGOẠI LAI (OUTLIERS)
+#   Mục tiêu: Loại bỏ các dữ liệu rác làm sai lệch mô hình.
 # =============================================================================
 
 def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
@@ -194,7 +265,10 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
         - quantity < 0: Xóa (hàng trả lại/lỗi).
         - Xử lý các đơn hàng có giá trị quá lớn bất thường nếu cần.
     """
-    pass
+    df = df[df['price'] >= 0].copy()
+    df = df[df['quantity'] > 0].copy()
+
+    return df
 
 def run_phase_4_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     df = remove_outliers(df)
@@ -215,18 +289,22 @@ def master_preprocessing_pipeline(df):
                 "user_profile": df_users
             }
     """
-
     df = run_phase_1_cleaning(df)
 
-    df = remove_outliers(df)
+    # Xử lý ngoại lai hoặc rác làm sớm để dữ liệu sạch luôn
+    df = run_phase_4_cleaning(df)
 
-    df = extract_time_features(df)
+    # Đặc trưng thời gian
+    df = run_phase_2_cleaning(df)
+
     df = create_price_segments(df)
-
     df = encode_and_scale_features(df)
 
-    # Gom nhóm và biến đổi
     df_rules = transform_for_association_rules(df)
     df_users = transform_for_user_profile(df)
 
-    return df ,df_users
+    return {
+        "main_clean": df,
+        "rules_data": df_rules,
+        "user_profile": df_users
+    }

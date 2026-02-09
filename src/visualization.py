@@ -108,3 +108,98 @@ def plot_preprocessing_comparison(df_raw: pd.DataFrame, df_clean: pd.DataFrame, 
         save(save_path)
     plt.tight_layout()
     plt.show()
+
+
+# TODO - BIỂU ĐÔ DÙNG PHÂN TÍCH XU HƯỚNG MUA HÀNG DỰA TRÊN DỮ LIỆU THỜI GIAN
+def plot_sales_trend(df: pd.DataFrame, freq='D', save_path=None):
+    """
+    TODO - Vẽ xu hướng số lượng đơn hàng theo thời gian (Ngày/Tuần/Tháng).
+        freq: 'D' (Ngày), 'W' (Tuần), 'M' (Tháng).
+    """
+    # Gom nhóm theo thời gian
+    # set_index để dùng resample (mạnh hơn groupby cho time series)
+    sales_trend = df.set_index('event_time').resample(freq)['order_id'].count()
+
+    plt.figure(figsize=(15, 6))
+    sales_trend.plot(kind='line', color='darkorange', linewidth=2, marker='o', markersize=4)
+
+    freq_name = {'D': 'Ngày', 'W': 'Tuần', 'ME': 'Tháng'}
+    plt.title(f'Xu hướng số lượng đơn hàng theo {freq_name.get(freq, freq)}', fontsize=15, fontweight='bold')
+    plt.xlabel('Thời gian')
+    plt.ylabel('Số lượng đơn hàng')
+    plt.grid(True, linestyle='--', alpha=0.6)
+
+    if save_path:
+        save(save_path)
+    plt.show()
+
+
+def plot_sales_by_weekday(df: pd.DataFrame, save_path=None):
+    """
+    TODO - Vẽ biểu đồ cột thống kê tổng lượng đơn hàng theo 7 ngày trong tuần.
+        Giúp nhận diện "Ngày vàng" trong tuần (Ví dụ: Thứ 7 hay Chủ Nhật?).
+    """
+    # Kiểm tra xem đã chạy Phase 2 (tạo cột thứ) chưa
+    if 'weekday_name' not in df.columns:
+        print("Lỗi: Thiếu cột 'weekday_name'. Hãy chạy hàm extract_time_features trước.")
+        return
+
+    # 1. Gom nhóm và đếm số lượng đơn hàng
+    # Dùng nunique để đếm số đơn hàng duy nhất (tránh đếm trùng sản phẩm trong 1 đơn)
+    weekday_counts = df.groupby('weekday_name')['order_id'].nunique()
+
+    # 2. Sắp xếp lại thứ tự từ Thứ 2 -> Chủ Nhật cho đúng chuẩn
+    days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    # Chỉ lấy những ngày có trong dữ liệu và sắp xếp theo list mẫu
+    weekday_counts = weekday_counts.reindex(days_order).dropna()
+
+    # 3. Vẽ biểu đồ
+    plt.figure(figsize=(10, 6))
+
+    # Vẽ cột màu xanh (SkyBlue), thêm viền đen cho rõ
+    ax = weekday_counts.plot(kind='bar', color='skyblue', edgecolor='black', zorder=3)
+
+    plt.title('Thống kê lượng đơn hàng theo ngày trong tuần', fontsize=15, fontweight='bold')
+    plt.xlabel('Thứ trong tuần', fontsize=12)
+    plt.ylabel('Tổng số đơn hàng', fontsize=12)
+    plt.xticks(rotation=45)  # Xoay chữ cho dễ đọc
+    plt.grid(axis='y', linestyle='--', alpha=0.7, zorder=0)  # Chỉ kẻ lưới ngang
+
+    # Thêm số liệu trên đầu mỗi cột
+    for i, v in enumerate(weekday_counts):
+        ax.text(i, v + (v * 0.01), str(int(v)), ha='center', fontweight='bold')
+
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight')
+    plt.show()
+
+def plot_time_heatmap(df: pd.DataFrame, save_path=None):
+    """
+    TODO - Vẽ Heatmap thể hiện mật độ mua sắm theo: Thứ trong tuần vs Giờ trong ngày.
+        Giúp tìm ra "Khung giờ vàng".
+    """
+    if 'weekday_name' not in df.columns or 'hour' not in df.columns:
+        print("Lỗi: Thiếu cột 'weekday_name' hoặc 'hour'. Hãy chạy Phase 2 trước.")
+        return
+
+    # 1. Tạo bảng Pivot: Hàng=Thứ, Cột=Giờ, Giá trị=Số đơn
+    # Thứ tự các thứ trong tuần để vẽ cho đúng chuẩn
+    order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+    pivot_table = df.pivot_table(
+        index='weekday_name',
+        columns='hour',
+        values='order_id',
+        aggfunc='count'
+    ).reindex(order)  # Sắp xếp lại thứ tự thứ
+
+    plt.figure(figsize=(16, 6))
+    sns.heatmap(pivot_table, cmap='YlGnBu', annot=False, fmt='d', linewidths=0.5)
+
+    plt.title('Bản đồ nhiệt: Mật độ mua sắm (Thứ vs Giờ)', fontsize=15, fontweight='bold')
+    plt.xlabel('Giờ trong ngày (0-23h)')
+    plt.ylabel('Thứ trong tuần')
+
+    if save_path:
+        save(save_path)
+    plt.show()
