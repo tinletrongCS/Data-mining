@@ -43,10 +43,15 @@
 
 ** Trong train lúc này sau khi chạy run_preprocessing:
 `
+
         import pandas as pd
+        
         df_main = pd.read_pickle("data\\processed\\main_clean.pkl")
+        
         df_rules = pd.read_pickle("data\\processed\\rules_data.pkl")
+        
         df_users = pd.read_pickle("data\\processed\\user_profile.pkl")
+        
 `
 
 **Chạy dự án từ đầu**
@@ -151,6 +156,7 @@
     
   
   
+
 
 
 
