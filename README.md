@@ -1,4 +1,4 @@
-**Cấu trúc dự án**
+**Cấu trúc dự án (Cũ) - vẫn dùng được nhưng kiến trúc chưa tối ưu lắm và chạy khá chậm**
 
         .
         ├── README.md
@@ -17,6 +17,30 @@
             └── __init__.py
             ├── preprocessing.py      # Các hàm tiền xử lý dữ liệu
             └── visualization.py      # Vẽ hình 
+
+**Cấu trúc dự án mới**
+
+        .
+        ├── README.md
+        ├── data
+        │   ├── processed                 # Chứa các file .pkl đã qua tiền xử lý 
+        │   └── raw                       # Chứa dataset gốc - không chỉnh sửa !!
+        ├── image
+        │   ├── *.png                     # Chứa hình vẽ và các biểu đồ 
+        ├── main.ipynb
+        ├── notebooks                     # Nơi để mỗi người nháp code 
+        │   ├── tin.ipynb
+        │   ├── toan.ipynb
+        │   ├── ton.ipynb
+        ├── requirements.txt
+        ├── run_preprocessing.py           # Chạy file này trước tiên để thực hiện tiền xử lý 
+        ├── setting.json
+        ├── src
+        │   ├── __init__.py
+        │   ├── preprocessing.py
+        │   └── visualization.py
+        └── train.ipynb                    # Đây là file mới sẽ dùng trong giai đoạn kế tiếp 
+
 
 **Chạy dự án từ đầu**
 
@@ -120,6 +144,7 @@
     
   
   
+
 
 
 
