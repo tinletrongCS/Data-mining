@@ -67,6 +67,9 @@ def run_phase_1_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     """
     TODO: Hàm tổng hợp gọi lần lượt các bước làm sạch cơ bản theo thứ tự.
     """
+    df.columns = df.columns.str.strip()
+    df.columns = df.columns.str.lower()
+
     df = format_id_columns(df)
     df = format_datetime_column(df)
     df = format_price_column(df)
