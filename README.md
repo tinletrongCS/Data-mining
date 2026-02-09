@@ -26,12 +26,12 @@
         │   ├── processed                 # Chứa các file .pkl đã qua tiền xử lý 
         │   └── raw                       # Chứa dataset gốc - không chỉnh sửa !!
         ├── image
-        │   ├── *.png                     # Chứa hình vẽ và các biểu đồ 
+        │   └── *.png                     # Chứa hình vẽ và các biểu đồ 
         ├── main.ipynb
         ├── notebooks                     # Nơi để mỗi người nháp code 
         │   ├── tin.ipynb
         │   ├── toan.ipynb
-        │   ├── ton.ipynb
+        │   └── ton.ipynb
         ├── requirements.txt
         ├── run_preprocessing.py           # Chạy file này trước tiên để thực hiện tiền xử lý 
         ├── setting.json
@@ -144,6 +144,7 @@
     
   
   
+
 
 
 
