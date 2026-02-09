@@ -42,7 +42,7 @@
         └── train.ipynb                    # Đây là file mới sẽ dùng trong giai đoạn kế tiếp 
 
 ** Trong train lúc này sau khi chạy run_preprocessing:
-`
+
 
         import pandas as pd
         
@@ -52,7 +52,7 @@
         
         df_users = pd.read_pickle("data\\processed\\user_profile.pkl")
         
-`
+
 
 **Chạy dự án từ đầu**
 
@@ -156,6 +156,7 @@
     
   
   
+
 
 
 
