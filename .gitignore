@@ -23,6 +23,7 @@ src/tempCodeRunnerFile.py
 notebooks/*.py
 .ipynb_checkpoints/
 *.py
+!run_preprocessing.py
 
 # Quy trình sao lưu code
 Makefile
