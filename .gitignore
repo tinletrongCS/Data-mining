@@ -22,9 +22,11 @@ src/tempCodeRunnerFile.py
 notebooks/*.py
 .ipynb_checkpoints/
 *.py
+# Ngoại lệ
 !run_preprocessing.py
-!models/*.py
-!src
+!models/**/*.py
+!src/**/*.py
+
 # Quy trình sao lưu code
 Makefile
 
