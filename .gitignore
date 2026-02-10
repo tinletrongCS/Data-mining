@@ -23,7 +23,8 @@ notebooks/*.py
 .ipynb_checkpoints/
 *.py
 !run_preprocessing.py
-
+!models/*.py
+!src
 # Quy trình sao lưu code
 Makefile
 
