@@ -17,6 +17,9 @@
         ├── setting.json
         ├── src
         │   ├── __init__.py
+        │   ├── algorithms                 # Chứa các file giải thuật và huấn luyện mô hình 
+        │   │   ├── __init__.py
+        │   │   └── clustering.py
         │   ├── preprocessing.py
         │   └── visualization.py
         └── train.ipynb                    # Đây là file mới sẽ dùng trong giai đoạn kế tiếp 
@@ -136,6 +139,7 @@
     
   
   
+
 
 
 
