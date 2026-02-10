@@ -1,23 +1,3 @@
-**Cấu trúc dự án (Cũ) - vẫn dùng được nhưng kiến trúc chưa tối ưu lắm và chạy khá chậm**
-
-        .
-        ├── README.md
-        ├── __pycache__
-        │   └── code.cpython-312.pyc
-        ├── data                      # File dataset gốc - không chỉnh sửa !!
-        │   └── jewelry.csv
-        ├── main.ipynb                # File chính để tổng hợp kết quả
-        ├── notebooks                 # Nơi để mỗi người nháp code 
-        │   ├── tin.ipynb
-        │   ├── toan.ipynb
-        │   └── ton.ipynb
-        ├── requirements.txt
-        ├── setting.json
-        └── src                       # Trong đây chứa các hàm dùng chung 
-            └── __init__.py
-            ├── preprocessing.py      # Các hàm tiền xử lý dữ liệu
-            └── visualization.py      # Vẽ hình 
-
 **Cấu trúc dự án mới**
 
         .
@@ -156,6 +136,7 @@
     
   
   
+
 
 
 
