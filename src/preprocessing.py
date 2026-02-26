@@ -265,12 +265,10 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
     TODO: Loại bỏ các dòng dữ liệu bất thường.
         Yêu cầu:
         - price <= 0: Xóa.
-        - quantity < 0: Xóa (hàng trả lại/lỗi).
-        - Xử lý các đơn hàng có giá trị quá lớn bất thường.
+        - quantity < 0: Xóa
+        - Xử lý các đơn hàng có giá trị lớn bất thường.
     """
-    df = df[df['price'] >= 0].copy()
-    df = df[df['quantity'] > 0].copy()
-
+    df = df[(df['price'] >= 0) & (df['quantity'] > 0)].copy()
     # Tính các khoảng tứ phân vị
     Q1 = df['price'].quantile(0.25)
     Q3 = df['price'].quantile(0.75)
