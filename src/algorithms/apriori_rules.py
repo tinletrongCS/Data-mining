@@ -12,7 +12,7 @@ class Apriori:
 
     def preprocess_data(self):
         """
-        Bước 1: Chuyển đổi cột 'item_list' thành ma trận One-Hot Encoding.
+        Chuyển đổi cột 'item_list' thành ma trận One-Hot Encoding.
         - Input: List các items trong mỗi order.
         - Output: DataFrame với các cột là tên sản phẩm, giá trị là True/False hoặc 1/0.
         """

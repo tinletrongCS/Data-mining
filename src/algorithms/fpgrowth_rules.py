@@ -14,6 +14,13 @@ class FPGrowth:
     def preprocess_data(self):
         """
         Chuyển đổi cột 'item_list' thành ma trận One-Hot Encoding.
+        - Input: List các items trong mỗi order.
+        - Output: DataFrame với các cột là tên sản phẩm, giá trị là True/False hoặc 1/0.
+        vd 1 đơn hàng mua như sau: ID = 123 ['earring', 'ring', 'necklace']
+        ma trận sẽ là
+        ID ... earring ... ... ring ... necklace ...
+        123     True           True      True
+        những chỗ ... là những loại đá quý khác, và có giá trị là False
         """
         # TODO: chuyển đổi df_rules thành ma trận df_encoded
         pass
