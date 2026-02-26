@@ -203,3 +203,76 @@ def plot_time_heatmap(df: pd.DataFrame, save_path=None):
     if save_path:
         save(save_path)
     plt.show()
+
+
+# TODO: Biểu đồ phân cụm
+def plot_cluster_boxplots(df_clustered: pd.DataFrame):
+    """
+    Vẽ biểu đồ Boxplot cho các chỉ số RFM theo từng cụm khách hàng.
+    """
+    # Các cột cần vẽ
+    features = ['recency', 'total_orders', 'total_spend', 'avg_order_value']
+
+    # Tạo khung hình 2x2
+    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+    fig.suptitle('Đặc điểm RFM của các Cụm khách hàng (Boxplots)', fontsize=16, fontweight='bold')
+
+    # Trải phẳng mảng axes để dễ lặp
+    axes = axes.flatten()
+
+    # Bảng màu đẹp cho các cụm
+    palette = sns.color_palette("Set2", n_colors=df_clustered['cluster'].nunique())
+
+    for i, feature in enumerate(features):
+        sns.boxplot(
+            x='cluster',
+            y=feature,
+            data=df_clustered,
+            ax=axes[i],
+            palette=palette,
+            showfliers=False  # Ẩn bớt các điểm outlier quá xa để dễ nhìn
+        )
+        axes[i].set_title(f'Phân phối của {feature.upper()}', fontsize=12)
+        axes[i].set_xlabel('Cụm (Cluster)')
+        axes[i].set_ylabel('Giá trị')
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.show()
+
+
+def plot_rfm_3d_scatter(df_clustered: pd.DataFrame):
+    """
+    Vẽ biểu đồ Scatter 3D thể hiện sự phân tách của các cụm trong không gian RFM.
+    """
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Tạo danh sách màu sắc tương ứng với số cụm
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'][:df_clustered['cluster'].nunique()]
+
+    for cluster_id in sorted(df_clustered['cluster'].unique()):
+        # Lọc dữ liệu của từng cụm
+        cluster_data = df_clustered[df_clustered['cluster'] == cluster_id]
+
+        # Để đồ thị không bị lag và không bị biến dạng bởi nhóm VIP (Cụm 1),
+        # ta lấy mẫu (sample) và có thể dùng np.log1p để scale lại trục cho dễ nhìn
+        ax.scatter(
+            cluster_data['recency'],
+            cluster_data['total_orders'],
+            cluster_data['avg_order_value'],  # Dùng avg_order_value thay vì total_spend để đồ thị bung đều hơn
+            label=f'Cluster {cluster_id}',
+            alpha=0.6,
+            edgecolors='w',
+            s=50,
+            c=colors[cluster_id % len(colors)]
+        )
+
+    ax.set_xlabel('Recency (Ngày)')
+    ax.set_ylabel('Total Orders (Số đơn)')
+    ax.set_zlabel('Avg Order Value (Giá trị/đơn)')
+    ax.set_title('Phân cụm Khách hàng 3D (RFM Space)', fontsize=14, fontweight='bold')
+
+    # Hiển thị chú thích
+    ax.legend(title="Clusters", bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.show()
