@@ -266,12 +266,22 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
         Yêu cầu:
         - price <= 0: Xóa.
         - quantity < 0: Xóa (hàng trả lại/lỗi).
-        - Xử lý các đơn hàng có giá trị quá lớn bất thường nếu cần.
+        - Xử lý các đơn hàng có giá trị quá lớn bất thường.
     """
     df = df[df['price'] >= 0].copy()
     df = df[df['quantity'] > 0].copy()
 
-    return df
+    # Tính các khoảng tứ phân vị
+    Q1 = df['price'].quantile(0.25)
+    Q3 = df['price'].quantile(0.75)
+    IQR = Q3 - Q1
+
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+
+    # Loại bỏ ngoại lai
+    df_clean = df[(df['price'] >= lower_bound) & (df['price'] <= upper_bound)].copy()
+    return df_clean
 
 def run_phase_4_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     df = remove_outliers(df)
