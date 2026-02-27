@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+from sklearn.preprocessing import MinMaxScaler
 # =============================================================================
 # 1. LÀM SẠCH CƠ BẢN VÀ ĐỔI TÊN CỘT
 # Chú ý: Khi gọi các hàm ở đây thì truyền tham số kiểu bảng, truyền vào dataset
@@ -29,7 +29,10 @@ def format_price_column(df: pd.DataFrame) -> pd.DataFrame:
     TODO: Xử lý cột giá (price) -> float
     """
     if 'price' in df.columns:
-        df['price'] = pd.to_numeric(df['price'], errors='coerce').fillna(0.0)
+        df['price'] = pd.to_numeric(df['price'], errors='coerce')
+        # những hàng nào không chứa giá trị cột price thì bỏ luôn
+        # do dùng trong k means thì những giá trị 0 này sẽ gây lệch
+        df = df.dropna(subset=['price']).copy()
     return df
 
 def drop_missing_critical_ids(df: pd.DataFrame) -> pd.DataFrame:
@@ -55,7 +58,7 @@ def clean_category_column(df: pd.DataFrame) -> pd.DataFrame:
 def clean_product_attributes(df: pd.DataFrame) -> pd.DataFrame:
     """
     TODO: Columns: gender, color, metal, gem
-    - Chuyển về lowercase để đồng nhất (Gold hay gold gì đều như nhau nha).
+        Chuyển về lowercase để đồng nhất (Gold hay gold gì đều như nhau nha).
     """
     cols = ['gender', 'color', 'metal', 'gem']
     for col in cols:
@@ -69,6 +72,7 @@ def run_phase_1_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     """
     df.columns = df.columns.str.strip()
     df.columns = df.columns.str.lower()
+    df = df.drop_duplicates().copy()
 
     df = format_id_columns(df)
     df = format_datetime_column(df)
@@ -226,27 +230,20 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
 
 def encode_and_scale_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    TODO - Mã hóa biến phân loại và Chuẩn hóa biến số.
+    TODO - Mã hóa biến phân loại
     """
-    # 1. MÃ HÓA (ENCODING): Chuyển chữ thành số
-    # Các cột cần mã hóa
     cat_cols = ['gender', 'color', 'metal', 'gem', 'category_code', 'price_segment']
     existing_cats = [col for col in cat_cols if col in df.columns]
-
-    le = LabelEncoder()
-    for col in existing_cats:
-        df[f'{col}_encoded'] = le.fit_transform(df[col].astype(str))
-
+    # drop_first để loại bỏ đa cộng tuyến
+    df = pd.get_dummies(df, columns=existing_cats, drop_first=False, dtype=int)
     num_cols = ['price', 'quantity']
     if 'hour' in df.columns:
         num_cols.append('hour')
 
     existing_nums = [col for col in num_cols if col in df.columns]
-
     scaler = MinMaxScaler()
     for col in existing_nums:
         df[f'{col}_scaled'] = scaler.fit_transform(df[[col]])
-
     return df
 
 def run_phase_3_cleaning(df: pd.DataFrame) -> pd.DataFrame:
@@ -270,15 +267,19 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df[(df['price'] >= 0) & (df['quantity'] > 0)].copy()
     # Tính các khoảng tứ phân vị
-    Q1 = df['price'].quantile(0.25)
-    Q3 = df['price'].quantile(0.75)
-    IQR = Q3 - Q1
-
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
+    # Q1 = df['price'].quantile(0.25)
+    # Q3 = df['price'].quantile(0.75)
+    # IQR = Q3 - Q1
+    #
+    # lower_bound = Q1 - 1.5 * IQR
+    # upper_bound = Q3 + 1.5 * IQR
 
     # Loại bỏ ngoại lai
-    df_clean = df[(df['price'] >= lower_bound) & (df['price'] <= upper_bound)].copy()
+    # df_clean = df[(df['price'] >= lower_bound) & (df['price'] <= upper_bound)].copy()
+
+    upper_limit = df['price'].quantile(0.999)
+    df_clean = df[df['price'] <= upper_limit].copy()
+
     return df_clean
 
 def run_phase_4_cleaning(df: pd.DataFrame) -> pd.DataFrame:
@@ -307,15 +308,14 @@ def master_preprocessing_pipeline(df):
 
     # Đặc trưng thời gian
     df = run_phase_2_cleaning(df)
-
     df = create_price_segments(df)
-    df = encode_and_scale_features(df)
 
     df_rules = transform_for_association_rules(df)
     df_users = transform_for_user_profile(df)
 
+    df_main_clean = encode_and_scale_features(df.copy())
     return {
-        "main_clean": df,
+        "main_clean": df_main_clean,
         "rules_data": df_rules,
         "user_profile": df_users
     }

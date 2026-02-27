@@ -19,9 +19,22 @@ class KMeansSegmentation:
     def preprocess(self):
         """
         Chuẩn hóa dữ liệu
+        Log transformation
         """
-        X = self.df_processed[self.rfm_attributes]
-        self.df_scaled = pd.DataFrame(self.scaler.fit_transform(X), columns=self.rfm_attributes)
+        # X = self.df_processed[self.rfm_attributes]
+        # self.df_scaled = pd.DataFrame(self.scaler.fit_transform(X), columns=self.rfm_attributes)
+        # return self.df_scaled
+        # 1. ÁP DỤNG LOG TRANSFORM CHO CÁC CỘT TIỀN VÀ SỐ LƯỢNG (Bí kíp chống lệch Centroid)
+        # Dùng log1p (log(1+x)) để tránh lỗi khi giá trị = 0
+        df_rfm = self.df_processed[['recency', 'total_orders', 'total_spend', 'avg_order_value']].copy()
+        df_rfm['total_spend_log'] = np.log1p(df_rfm['total_spend'])
+        df_rfm['avg_order_value_log'] = np.log1p(df_rfm['avg_order_value'])
+        df_rfm['total_orders_log'] = np.log1p(df_rfm['total_orders'])
+
+        features_to_scale = ['recency', 'total_orders_log', 'total_spend_log', 'avg_order_value_log']
+        scaler = StandardScaler()
+        self.df_scaled = pd.DataFrame(scaler.fit_transform(df_rfm[features_to_scale]), columns=features_to_scale)
+
         return self.df_scaled
 
     def train(self, n_clusters=4):
@@ -34,6 +47,7 @@ class KMeansSegmentation:
         self.model.fit(self.df_scaled)
         self.df_processed['cluster'] = self.model.labels_
         return self.df_processed
+
 
     def profile_clusters(self):
         """
