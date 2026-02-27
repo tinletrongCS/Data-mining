@@ -211,7 +211,7 @@ def plot_cluster_boxplots(df_clustered: pd.DataFrame):
     Vẽ biểu đồ Boxplot cho các chỉ số RFM theo từng cụm khách hàng.
     """
     # Các cột cần vẽ
-    features = ['recency', 'total_orders', 'total_spend', 'avg_order_value']
+    features = ['recency', 'total_orders', 'avg_order_value']
 
     # Tạo khung hình 2x2
     fig, axes = plt.subplots(2, 2, figsize=(15, 10))

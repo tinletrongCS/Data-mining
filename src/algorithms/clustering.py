@@ -26,12 +26,26 @@ class KMeansSegmentation:
         # return self.df_scaled
         # 1. ÁP DỤNG LOG TRANSFORM CHO CÁC CỘT TIỀN VÀ SỐ LƯỢNG (Bí kíp chống lệch Centroid)
         # Dùng log1p (log(1+x)) để tránh lỗi khi giá trị = 0
-        df_rfm = self.df_processed[['recency', 'total_orders', 'total_spend', 'avg_order_value']].copy()
-        df_rfm['total_spend_log'] = np.log1p(df_rfm['total_spend'])
-        df_rfm['avg_order_value_log'] = np.log1p(df_rfm['avg_order_value'])
-        df_rfm['total_orders_log'] = np.log1p(df_rfm['total_orders'])
+        #df_rfm = self.df_processed[['recency', 'total_orders', 'total_spend', 'avg_order_value']].copy()
+        valid_cols = [col for col in self.rfm_attributes if col in self.df_processed.columns]
+        df_rfm = self.df_processed[valid_cols].copy()
 
-        features_to_scale = ['recency', 'total_orders_log', 'total_spend_log', 'avg_order_value_log']
+        # df_rfm['total_spend_log'] = np.log1p(df_rfm['total_spend'])
+        # df_rfm['avg_order_value_log'] = np.log1p(df_rfm['avg_order_value'])
+        # df_rfm['total_orders_log'] = np.log1p(df_rfm['total_orders'])
+        if 'total_spend' in df_rfm.columns:
+            df_rfm['total_spend_log'] = np.log1p(df_rfm['total_spend'])
+        if 'avg_order_value' in df_rfm.columns:
+            df_rfm['avg_order_value_log'] = np.log1p(df_rfm['avg_order_value'])
+        if 'total_orders' in df_rfm.columns:
+            df_rfm['total_orders_log'] = np.log1p(df_rfm['total_orders'])
+
+        # features_to_scale = ['recency', 'total_orders_log', 'total_spend_log', 'avg_order_value_log']
+        features_to_scale = ['recency']
+        if 'total_orders_log' in df_rfm.columns: features_to_scale.append('total_orders_log')
+        if 'total_spend_log' in df_rfm.columns: features_to_scale.append('total_spend_log')
+        if 'avg_order_value_log' in df_rfm.columns: features_to_scale.append('avg_order_value_log')
+
         scaler = StandardScaler()
         self.df_scaled = pd.DataFrame(scaler.fit_transform(df_rfm[features_to_scale]), columns=features_to_scale)
 
@@ -57,8 +71,13 @@ class KMeansSegmentation:
             print("Vui lòng gọi hàm train() trước khi phân tích!")
             return None
 
-        # Thống kê trung bình các chỉ số RFM
-        summary = self.df_processed.groupby('cluster')[self.rfm_attributes].mean().round(2)
+
+        actual_columns = self.df_processed.columns.tolist()
+
+        valid_cols = [col for col in self.rfm_attributes if col in actual_columns]
+
+        summary = self.df_processed.groupby('cluster')[valid_cols].mean().round(2)
+        
         summary['user_count'] = self.df_processed['cluster'].value_counts()
 
         # Tìm loại đá quý (gem) yêu thích nhất của từng cụm

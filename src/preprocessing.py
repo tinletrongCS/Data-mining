@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 # =============================================================================
 # 1. LÀM SẠCH CƠ BẢN VÀ ĐỔI TÊN CỘT
@@ -286,6 +287,25 @@ def run_phase_4_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     df = remove_outliers(df)
 
     return df
+
+# =============================================================================
+#! TODO - 5. PHÂN TÍCH TƯƠNG QUAN (CORRELATION ANALYSIS)
+# =============================================================================
+def handle_correlated_features(df: pd.DataFrame, feature_cols: list, threshold: float = 0.8) -> pd.DataFrame:
+    df_check = df[feature_cols].copy()
+    
+    # Tính ma trận tương quan Pearson
+    corr_matrix = df_check.corr(method='pearson').abs()
+    
+    # Lấy nửa trên của ma trận để tránh lấy đường chéo
+    upper_tri = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    
+    # Tìm các cột có độ tương quan > threshold và đánh dấu để loại bỏ
+    to_drop = [column for column in upper_tri.columns if any(upper_tri[column] > threshold)]
+    
+    if to_drop:# Nếu có cột nào cần loại bỏ
+        df = df.drop(columns=to_drop)
+    return df
 # =============================================================================
 # PIPELINE
 # =============================================================================
@@ -312,6 +332,11 @@ def master_preprocessing_pipeline(df):
 
     df_rules = transform_for_association_rules(df)
     df_users = transform_for_user_profile(df)
+
+    #! Lọc biến dư thừa cho tập RFM trước khi trả về cho K-Means
+    rfm_cols = ['recency', 'total_orders', 'total_spend', 'avg_order_value']
+    df_users = handle_correlated_features(df_users, rfm_cols, threshold=0.8)
+    #!
 
     df_main_clean = encode_and_scale_features(df.copy())
     return {

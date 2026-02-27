@@ -2,8 +2,8 @@ import pandas as pd
 import os
 from src.preprocessing import master_preprocessing_pipeline
 
-RAW_DATA_PATH = 'data\\raw\\jewelry.csv'
-PROCESSED_DIR = 'data\\processed'
+RAW_DATA_PATH = 'data/raw/jewelry.csv'
+PROCESSED_DIR = 'data/processed'
 
 COLUMNS_NAME = [
     'event_time',    # Thời gian mua hàng
