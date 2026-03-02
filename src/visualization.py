@@ -206,7 +206,7 @@ def plot_time_heatmap(df: pd.DataFrame, save_path=None):
 
 
 # TODO: Biểu đồ phân cụm
-def plot_cluster_boxplots(df_clustered: pd.DataFrame):
+def plot_cluster_boxplots(df_clustered: pd.DataFrame, save_path=None):
     """
     Vẽ biểu đồ Boxplot cho các chỉ số RFM theo từng cụm khách hàng.
     """
@@ -237,10 +237,12 @@ def plot_cluster_boxplots(df_clustered: pd.DataFrame):
         axes[i].set_ylabel('Giá trị')
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    if save_path:
+        save(save_path)
     plt.show()
 
 
-def plot_rfm_3d_scatter(df_clustered: pd.DataFrame):
+def plot_rfm_3d_scatter(df_clustered: pd.DataFrame, save_path=None):
     """
     Vẽ biểu đồ Scatter 3D thể hiện sự phân tách của các cụm trong không gian RFM.
     """
@@ -275,4 +277,6 @@ def plot_rfm_3d_scatter(df_clustered: pd.DataFrame):
     # Hiển thị chú thích
     ax.legend(title="Clusters", bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
+    if save_path:
+        save(save_path)
     plt.show()
