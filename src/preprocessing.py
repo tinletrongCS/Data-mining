@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from typing import Tuple
 from sklearn.preprocessing import MinMaxScaler
 # =============================================================================
 # 1. LÀM SẠCH CƠ BẢN VÀ ĐỔI TÊN CỘT
@@ -107,7 +108,7 @@ def extract_time_features(df: pd.DataFrame) -> pd.DataFrame:
     df['hour'] = df['event_time'].dt.hour
     df['day'] = df['event_time'].dt.day
     df['month'] = df['event_time'].dt.month
-    # dayofweek trả về số: 0 (Thứ 2) -> 6 (Chủ nhật)
+    # day_of_week trả về số: 0 (Thứ 2) -> 6 (Chủ nhật)
     df['day_of_week'] = df['event_time'].dt.dayofweek
 
     # hiện tên thứ (Monday, Tuesday...) để vẽ biểu đồ cho đẹp
@@ -218,11 +219,13 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
     }, inplace=True)
     # Recency: Ngày cuối file - Ngày cuối của user
     df_users['recency'] = (last_time_in_data - df_users['last_purchase_date']).dt.days
+
     # Tổng chiTổng đơn
-    df_users['avg_order_value'] = (df_users['total_spend'] / df_users['total_orders']).round(
-        2)  # Tiền sẵn sàng mua cho mỗi đơn hàng
+    df_users['avg_order_value'] = (df_users['total_spend'] / df_users['total_orders']).round(2)  
+    
     # Tổng đơn
     df_users['total_spend'] = df_users['total_spend'].round(2)
+
     # Xử lý an toàn cho Recency
     df_users['recency'] = df_users['recency'].clip(lower=0)  # Đảm bảo không có giá trị âm do lệch thời gian
 
@@ -247,9 +250,9 @@ def encode_and_scale_features(df: pd.DataFrame) -> pd.DataFrame:
     df[[f"{col}_scaled" for col in existing_nums]] = scaler.fit_transform(df[existing_nums])
     return df
 
-def run_phase_3_cleaning(df: pd.DataFrame) -> pd.DataFrame:
-    df_rules = transform_for_association_rules(df)
-    df_users = transform_for_user_profile(df)
+def run_phase_3_cleaning(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    df_rules = transform_for_association_rules(df.copy())
+    df_users = transform_for_user_profile(df.copy())
 
     return df_rules, df_users
 
