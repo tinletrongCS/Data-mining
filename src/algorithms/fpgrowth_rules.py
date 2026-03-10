@@ -1,11 +1,10 @@
 import pandas as pd
 
+
 class FPGrowth:
-    """
-    Class khai phá luật kết hợp sử dụng thuật toán FP-Growth .
-    """
 
     def __init__(self, df_rules: pd.DataFrame):
+        # df_rules là bảng có 2 cột: 'order_id' và 'item_list'
         self.df_rules = df_rules
         self.df_encoded = None
         self.frequent_itemsets = None

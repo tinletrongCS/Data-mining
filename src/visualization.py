@@ -133,6 +133,60 @@ def plot_sales_trend(df: pd.DataFrame, freq='D', save_path=None):
         save(save_path)
     plt.show()
 
+def plot_temporal_trends(df: pd.DataFrame, save_path=None):
+    """
+    Vẽ biểu đồ xu hướng mua sắm theo giờ trong ngày và thứ trong tuần.
+    Đầu vào là DataFrame đã chạy qua hàm extract_time_features.
+    """
+    sns.set_theme(style="whitegrid")
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+    hourly_orders = df.groupby('hour')['order_id'].nunique().reset_index()
+    hourly_orders.columns = ['Giờ trong ngày', 'Số lượng đơn hàng']
+    
+    sns.lineplot(
+        data=hourly_orders, 
+        x='Giờ trong ngày', 
+        y='Số lượng đơn hàng', 
+        ax=axes[0], 
+        marker='o',       # Thêm chấm tròn tại các điểm
+        color='#1f77b4',  # Màu xanh dương chuẩn
+        linewidth=2.5
+    )
+    axes[0].set_title('Xu hướng Mua sắm theo Giờ trong ngày', fontsize=14, fontweight='bold')
+    axes[0].set_xticks(range(0, 24, 2)) # Hiện trục X chẵn 2, 4, 6...22
+    axes[0].set_xlabel('Giờ (0 - 23)', fontsize=12)
+    axes[0].set_ylabel('Tổng số đơn hàng', fontsize=12)
+    
+    # ==========================================
+    # 2. BIỂU ĐỒ CỘT: XU HƯỚNG THEO THỨ (WEEKDAY)
+    # ==========================================
+    # Đếm số lượng đơn hàng theo thứ
+    weekday_orders = df.groupby('weekday_name')['order_id'].nunique().reset_index()
+    weekday_orders.columns = ['Thứ trong tuần', 'Số lượng đơn hàng']
+    
+    # Ép kiểu Categorical để thứ tự các ngày hiển thị đúng từ Thứ 2 đến Chủ nhật
+    days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    weekday_orders['Thứ trong tuần'] = pd.Categorical(weekday_orders['Thứ trong tuần'], categories=days_order, ordered=True)
+    weekday_orders = weekday_orders.sort_values('Thứ trong tuần')
+    
+    sns.barplot(
+        data=weekday_orders, 
+        x='Thứ trong tuần', 
+        y='Số lượng đơn hàng', 
+        ax=axes[1], 
+        palette='viridis' # Dải màu đẹp mắt
+    )
+    axes[1].set_title('Xu hướng Mua sắm theo Thứ trong tuần', fontsize=14, fontweight='bold')
+    axes[1].set_xlabel('Thứ', fontsize=12)
+    axes[1].set_ylabel('Tổng số đơn hàng', fontsize=12)
+    axes[1].tick_params(axis='x', rotation=45) # Xoay chữ ở trục X cho dễ nhìn
+    
+    # Khoảng cách giữa 2 biểu đồ
+    if (save_path):
+        save(save_path)
+    plt.tight_layout()
+    plt.show()
 
 def plot_sales_by_weekday(df: pd.DataFrame, save_path=None):
     """

@@ -225,7 +225,7 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
     df_users['total_spend'] = df_users['total_spend'].round(2)
     # Xử lý an toàn cho Recency
     df_users['recency'] = df_users['recency'].clip(lower=0)  # Đảm bảo không có giá trị âm do lệch thời gian
-    # Loại bỏ cột ngày mua cuối vì mô hình đã có rency
+
     df_users = df_users.drop(columns=['last_purchase_date'])
     return df_users
 
@@ -243,15 +243,15 @@ def encode_and_scale_features(df: pd.DataFrame) -> pd.DataFrame:
 
     existing_nums = [col for col in num_cols if col in df.columns]
     scaler = MinMaxScaler()
-    for col in existing_nums:
-        df[f'{col}_scaled'] = scaler.fit_transform(df[[col]])
+    #  fit 1 lần cho toàn bộ feature 
+    df[[f"{col}_scaled" for col in existing_nums]] = scaler.fit_transform(df[existing_nums])
     return df
 
 def run_phase_3_cleaning(df: pd.DataFrame) -> pd.DataFrame:
-    df = transform_for_association_rules(df)
-    df = transform_for_user_profile(df)
+    df_rules = transform_for_association_rules(df)
+    df_users = transform_for_user_profile(df)
 
-    return df
+    return df_rules, df_users
 
 # =============================================================================
 # TODO - 4. XỬ LÝ NHIỄU & NGOẠI LAI (OUTLIERS)
@@ -267,16 +267,6 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
         - Xử lý các đơn hàng có giá trị lớn bất thường.
     """
     df = df[(df['price'] >= 0) & (df['quantity'] > 0)].copy()
-    # Tính các khoảng tứ phân vị
-    # Q1 = df['price'].quantile(0.25)
-    # Q3 = df['price'].quantile(0.75)
-    # IQR = Q3 - Q1
-    #
-    # lower_bound = Q1 - 1.5 * IQR
-    # upper_bound = Q3 + 1.5 * IQR
-
-    # Loại bỏ ngoại lai
-    # df_clean = df[(df['price'] >= lower_bound) & (df['price'] <= upper_bound)].copy()
 
     upper_limit = df['price'].quantile(0.999)
     df_clean = df[df['price'] <= upper_limit].copy()
@@ -304,7 +294,7 @@ def handle_correlated_features(df: pd.DataFrame, feature_cols: list, threshold: 
     # Tìm các cột có độ tương quan > threshold và đánh dấu để loại bỏ
     to_drop = [column for column in upper_tri.columns if any(upper_tri[column] > threshold)]
 
-    if to_drop:  # Nếu có cột nào cần loại bỏ
+    if to_drop:  
         df = df.drop(columns=to_drop)
     return df
 # =============================================================================
@@ -323,18 +313,13 @@ def master_preprocessing_pipeline(df):
             }
     """
     df = run_phase_1_cleaning(df)
-
-    # Xử lý ngoại lai hoặc rác làm sớm để dữ liệu sạch luôn
     df = run_phase_4_cleaning(df)
-
-    # Đặc trưng thời gian
     df = run_phase_2_cleaning(df)
     df = create_price_segments(df)
 
-    df_rules = transform_for_association_rules(df)
-    df_users = transform_for_user_profile(df)
+    df_rules, df_users = run_phase_3_cleaning(df)
 
-    # ! Lọc biến dư thừa cho tập RFM trước khi trả về cho K-Means
+    # ! Lọc biến dư thừa cho tập RFM trước khi trả về cho K-Means ->  loại bỏ đa cộng tuyến 
     rfm_cols = ['recency', 'total_orders', 'total_spend', 'avg_order_value']
     df_users = handle_correlated_features(df_users, rfm_cols, threshold=0.8)
 
