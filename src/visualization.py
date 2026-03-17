@@ -30,7 +30,7 @@ def plot_price_distribution(df: pd.DataFrame, save_path=None):
     plt.show()
 
 
-def plot_top_categories(df: pd.DataFrame, column, top_n=10, save_path=None):
+def     plot_top_categories(df: pd.DataFrame, column, top_n=10, save_path=None):
     """
     TODO - Vẽ biểu đồ Top các danh mục/thương hiệu phổ biến nhất.
     """
