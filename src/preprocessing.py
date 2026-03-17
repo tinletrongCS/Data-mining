@@ -1,5 +1,7 @@
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+import numpy as np
+from typing import Tuple
+from sklearn.preprocessing import MinMaxScaler
 # =============================================================================
 # 1. LÀM SẠCH CƠ BẢN VÀ ĐỔI TÊN CỘT
 # Chú ý: Khi gọi các hàm ở đây thì truyền tham số kiểu bảng, truyền vào dataset
@@ -29,7 +31,10 @@ def format_price_column(df: pd.DataFrame) -> pd.DataFrame:
     TODO: Xử lý cột giá (price) -> float
     """
     if 'price' in df.columns:
-        df['price'] = pd.to_numeric(df['price'], errors='coerce').fillna(0.0)
+        df['price'] = pd.to_numeric(df['price'], errors='coerce')
+        # những hàng nào không chứa giá trị cột price thì bỏ luôn
+        # do dùng trong k means thì những giá trị 0 này sẽ gây lệch
+        df = df.dropna(subset=['price']).copy()
     return df
 
 def drop_missing_critical_ids(df: pd.DataFrame) -> pd.DataFrame:
@@ -55,7 +60,7 @@ def clean_category_column(df: pd.DataFrame) -> pd.DataFrame:
 def clean_product_attributes(df: pd.DataFrame) -> pd.DataFrame:
     """
     TODO: Columns: gender, color, metal, gem
-    - Chuyển về lowercase để đồng nhất (Gold hay gold gì đều như nhau nha).
+        Chuyển về lowercase để đồng nhất (Gold hay gold gì đều như nhau nha).
     """
     cols = ['gender', 'color', 'metal', 'gem']
     for col in cols:
@@ -69,6 +74,7 @@ def run_phase_1_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     """
     df.columns = df.columns.str.strip()
     df.columns = df.columns.str.lower()
+    df = df.drop_duplicates().copy()
 
     df = format_id_columns(df)
     df = format_datetime_column(df)
@@ -102,7 +108,7 @@ def extract_time_features(df: pd.DataFrame) -> pd.DataFrame:
     df['hour'] = df['event_time'].dt.hour
     df['day'] = df['event_time'].dt.day
     df['month'] = df['event_time'].dt.month
-    # dayofweek trả về số: 0 (Thứ 2) -> 6 (Chủ nhật)
+    # day_of_week trả về số: 0 (Thứ 2) -> 6 (Chủ nhật)
     df['day_of_week'] = df['event_time'].dt.dayofweek
 
     # hiện tên thứ (Monday, Tuesday...) để vẽ biểu đồ cho đẹp
@@ -185,18 +191,16 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
         (df['price'] > 0)
         ].copy()
     if valid_df.empty:
-        return pd.DataFrame()  # Trả về df rỗng nếu không có dữ liệu hợp lệ
-    # Xác định mốc thời gian cuối cùng từ tập dữ liệu đã lọc
+        return pd.DataFrame()  
+
     last_time_in_data = valid_df['event_time'].max()
 
-    # Định nghĩa hàm lấy danh sách Favorite Gems (Mode)
     def favorite_gem_list(x):
         counts = x.value_counts()
         if counts.empty: return ['unknown']
         max_count = counts.max()
         return counts[counts == max_count].index.tolist()
 
-    # Gom nhóm và tính toán (Aggregation)
     agg_rules = {
         'price': 'sum',
         'order_id': 'nunique',
@@ -204,7 +208,7 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
         'gem': favorite_gem_list
     }
     df_users = valid_df.groupby('user_id').agg(agg_rules).reset_index()
-    # Đổi tên và tính toán các chỉ số
+
     df_users.rename(columns={
         'price': 'total_spend',
         'order_id': 'total_orders',
@@ -213,47 +217,42 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
     }, inplace=True)
     # Recency: Ngày cuối file - Ngày cuối của user
     df_users['recency'] = (last_time_in_data - df_users['last_purchase_date']).dt.days
-    # Tổng chiTổng đơn
-    df_users['avg_order_value'] = (df_users['total_spend'] / df_users['total_orders']).round(
-        2)  # Tiền sẵn sàng mua cho mỗi đơn hàng
+
+    # Tổng chi
+    df_users['avg_order_value'] = (df_users['total_spend'] / df_users['total_orders']).round(2)  
+    
     # Tổng đơn
     df_users['total_spend'] = df_users['total_spend'].round(2)
+
     # Xử lý an toàn cho Recency
     df_users['recency'] = df_users['recency'].clip(lower=0)  # Đảm bảo không có giá trị âm do lệch thời gian
-    # Loại bỏ cột ngày mua cuối vì mô hình đã có rency
+
     df_users = df_users.drop(columns=['last_purchase_date'])
     return df_users
 
 def encode_and_scale_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    TODO - Mã hóa biến phân loại và Chuẩn hóa biến số.
+    TODO - Mã hóa biến phân loại
     """
-    # 1. MÃ HÓA (ENCODING): Chuyển chữ thành số
-    # Các cột cần mã hóa
     cat_cols = ['gender', 'color', 'metal', 'gem', 'category_code', 'price_segment']
     existing_cats = [col for col in cat_cols if col in df.columns]
-
-    le = LabelEncoder()
-    for col in existing_cats:
-        df[f'{col}_encoded'] = le.fit_transform(df[col].astype(str))
-
+    # drop_first để loại bỏ đa cộng tuyến
+    df = pd.get_dummies(df, columns=existing_cats, drop_first=False, dtype=int)
     num_cols = ['price', 'quantity']
     if 'hour' in df.columns:
         num_cols.append('hour')
 
     existing_nums = [col for col in num_cols if col in df.columns]
-
     scaler = MinMaxScaler()
-    for col in existing_nums:
-        df[f'{col}_scaled'] = scaler.fit_transform(df[[col]])
-
+    #  fit 1 lần cho toàn bộ feature 
+    df[[f"{col}_scaled" for col in existing_nums]] = scaler.fit_transform(df[existing_nums])
     return df
 
-def run_phase_3_cleaning(df: pd.DataFrame) -> pd.DataFrame:
-    df = transform_for_association_rules(df)
-    df = transform_for_user_profile(df)
+def run_phase_3_cleaning(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    df_rules = transform_for_association_rules(df.copy())
+    df_users = transform_for_user_profile(df.copy())
 
-    return df
+    return df_rules, df_users
 
 # =============================================================================
 # TODO - 4. XỬ LÝ NHIỄU & NGOẠI LAI (OUTLIERS)
@@ -265,17 +264,39 @@ def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
     TODO: Loại bỏ các dòng dữ liệu bất thường.
         Yêu cầu:
         - price <= 0: Xóa.
-        - quantity < 0: Xóa (hàng trả lại/lỗi).
-        - Xử lý các đơn hàng có giá trị quá lớn bất thường nếu cần.
+        - quantity < 0: Xóa
+        - Xử lý các đơn hàng có giá trị lớn bất thường.
     """
-    df = df[df['price'] >= 0].copy()
-    df = df[df['quantity'] > 0].copy()
+    df = df[(df['price'] >= 0) & (df['quantity'] > 0)].copy()
 
-    return df
+    upper_limit = df['price'].quantile(0.999)
+    df_clean = df[df['price'] <= upper_limit].copy()
+
+    return df_clean
 
 def run_phase_4_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     df = remove_outliers(df)
 
+    return df
+
+
+# =============================================================================
+# ! TODO - 5. PHÂN TÍCH TƯƠNG QUAN (CORRELATION ANALYSIS)
+# =============================================================================
+def handle_correlated_features(df: pd.DataFrame, feature_cols: list, threshold: float = 0.8) -> pd.DataFrame:
+    df_check = df[feature_cols].copy()
+
+    # Tính ma trận tương quan Pearson
+    corr_matrix = df_check.corr(method='pearson').abs()
+
+    # Lấy nửa trên của ma trận để tránh lấy đường chéo
+    upper_tri = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+
+    # Tìm các cột có độ tương quan > threshold và đánh dấu để loại bỏ
+    to_drop = [column for column in upper_tri.columns if any(upper_tri[column] > threshold)]
+
+    if to_drop:  
+        df = df.drop(columns=to_drop)
     return df
 # =============================================================================
 # PIPELINE
@@ -293,21 +314,19 @@ def master_preprocessing_pipeline(df):
             }
     """
     df = run_phase_1_cleaning(df)
-
-    # Xử lý ngoại lai hoặc rác làm sớm để dữ liệu sạch luôn
     df = run_phase_4_cleaning(df)
-
-    # Đặc trưng thời gian
     df = run_phase_2_cleaning(df)
-
     df = create_price_segments(df)
-    df = encode_and_scale_features(df)
 
-    df_rules = transform_for_association_rules(df)
-    df_users = transform_for_user_profile(df)
+    df_rules, df_users = run_phase_3_cleaning(df)
 
+    # ! Lọc biến dư thừa cho tập RFM trước khi trả về cho K-Means ->  loại bỏ đa cộng tuyến 
+    rfm_cols = ['recency', 'total_orders', 'total_spend', 'avg_order_value']
+    df_users = handle_correlated_features(df_users, rfm_cols, threshold=0.8)
+
+    df_main_clean = encode_and_scale_features(df.copy())
     return {
-        "main_clean": df,
+        "main_clean": df_main_clean,
         "rules_data": df_rules,
         "user_profile": df_users
     }
