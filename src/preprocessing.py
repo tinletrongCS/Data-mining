@@ -191,18 +191,16 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
         (df['price'] > 0)
         ].copy()
     if valid_df.empty:
-        return pd.DataFrame()  # Trả về df rỗng nếu không có dữ liệu hợp lệ
-    # Xác định mốc thời gian cuối cùng từ tập dữ liệu đã lọc
+        return pd.DataFrame()  
+
     last_time_in_data = valid_df['event_time'].max()
 
-    # Định nghĩa hàm lấy danh sách Favorite Gems (Mode)
     def favorite_gem_list(x):
         counts = x.value_counts()
         if counts.empty: return ['unknown']
         max_count = counts.max()
         return counts[counts == max_count].index.tolist()
 
-    # Gom nhóm và tính toán (Aggregation)
     agg_rules = {
         'price': 'sum',
         'order_id': 'nunique',
@@ -210,7 +208,7 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
         'gem': favorite_gem_list
     }
     df_users = valid_df.groupby('user_id').agg(agg_rules).reset_index()
-    # Đổi tên và tính toán các chỉ số
+
     df_users.rename(columns={
         'price': 'total_spend',
         'order_id': 'total_orders',
@@ -220,7 +218,7 @@ def transform_for_user_profile(df: pd.DataFrame) -> pd.DataFrame:
     # Recency: Ngày cuối file - Ngày cuối của user
     df_users['recency'] = (last_time_in_data - df_users['last_purchase_date']).dt.days
 
-    # Tổng chiTổng đơn
+    # Tổng chi
     df_users['avg_order_value'] = (df_users['total_spend'] / df_users['total_orders']).round(2)  
     
     # Tổng đơn

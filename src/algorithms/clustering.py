@@ -89,7 +89,7 @@ class KMeansSegmentation:
 
             # Đếm xem đá nào xuất hiện nhiều nhất
             if all_gems_in_cluster:
-                most_common = Counter(all_gems_in_cluster).most_common(5)  # Lấy top 2
+                most_common = Counter(all_gems_in_cluster).most_common(5)  # Lấy top 5
                 top_gems.append([gem for gem, count in most_common if gem != 'unknown'])
             else:
                 top_gems.append([])
