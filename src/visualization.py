@@ -2,7 +2,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
-
+from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from sklearn.preprocessing import MinMaxScaler
 # Cấu hình giao diện biểu đồ cho đẹp (chuẩn báo cáo khoa học)
 sns.set_theme(style="whitegrid")
 plt.rcParams['figure.figsize'] = (12, 6)
@@ -295,42 +298,222 @@ def plot_cluster_boxplots(df_clustered: pd.DataFrame, save_path=None):
         save(save_path)
     plt.show()
 
-
 def plot_rfm_3d_scatter(df_clustered: pd.DataFrame, save_path=None):
     """
     Vẽ biểu đồ Scatter 3D thể hiện sự phân tách của các cụm trong không gian RFM.
+    Đã fix lỗi dồn cục bằng cách dùng scale Logarit (np.log1p) và đồng bộ màu Radar.
     """
-    fig = plt.figure(figsize=(12, 8))
+    fig = plt.figure(figsize=(12, 9))
     ax = fig.add_subplot(111, projection='3d')
 
-    # Tạo danh sách màu sắc tương ứng với số cụm
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'][:df_clustered['cluster'].nunique()]
+    # 1. Đồng bộ màu sắc và tên gọi chính xác từ biểu đồ Radar Chart
+    cluster_info = {
+        0: {'label': 'Cụm 0', 'color': '#E74C3C'},          # Đỏ
+        1: {'label': 'Cụm 1', 'color': '#27AE60'}, # Xanh lá
+        2: {'label': 'Cụm 2', 'color': '#F1C40F'},        # Vàng
+        3: {'label': 'Cụm 3', 'color': "#2B84DE"}       # Xanh biển
+    }
 
-    for cluster_id in sorted(df_clustered['cluster'].unique()):
-        # Lọc dữ liệu của từng cụm
+    print("🔄 Đang vẽ biểu đồ 3D Scatter...")
+    
+    # 2. Thay đổi thứ tự vẽ (Vẽ các cụm đông người trước, cụm VIP/Cá mập ít người vẽ sau 
+    # để các điểm VIP không bị đè khuất)
+    draw_order = [3, 1, 0, 2] 
+
+    for cluster_id in draw_order:
+        if cluster_id not in df_clustered['cluster'].values:
+            continue
+            
         cluster_data = df_clustered[df_clustered['cluster'] == cluster_id]
+        info = cluster_info.get(cluster_id, {'label': f'Cụm {cluster_id}', 'color': '#000000'})
 
-        # Để đồ thị không bị lag và không bị biến dạng bởi nhóm VIP (Cụm 1),
-        # ta lấy mẫu (sample) và có thể dùng np.log1p để scale lại trục cho dễ nhìn
+        # 3. ÉP LOGARIT 3 TRỤC ĐỂ DỮ LIỆU BUNG ĐỀU RA (CHỐNG DỒN CỤC)
+        x = np.log1p(cluster_data['recency'])
+        y = np.log1p(cluster_data['total_orders'])
+        z = np.log1p(cluster_data['avg_order_value'])
+
         ax.scatter(
-            cluster_data['recency'],
-            cluster_data['total_orders'],
-            cluster_data['avg_order_value'],  # Dùng avg_order_value thay vì total_spend để đồ thị bung đều hơn
-            label=f'Cluster {cluster_id}',
-            alpha=0.6,
-            edgecolors='w',
-            s=50,
-            c=colors[cluster_id % len(colors)]
+            x, y, z,
+            label=info['label'],
+            alpha=0.7,            # Tăng độ trong suốt một chút để thấy các điểm bị chồng
+            edgecolors='w',       # Viền trắng giúp các hạt tách bạch nhau hơn
+            linewidth=0.5,
+            s=60,                 # Tăng kích thước hạt lên một chút
+            c=info['color']
         )
 
-    ax.set_xlabel('Recency (Ngày)')
-    ax.set_ylabel('Total Orders (Số đơn)')
-    ax.set_zlabel('Avg Order Value (Giá trị/đơn)')
-    ax.set_title('Phân cụm Khách hàng 3D (RFM Space)', fontsize=14, fontweight='bold')
+    # 4. Trang trí trục (Thêm labelpad để đẩy chữ ra)
+    ax.set_xlabel('Log(Recency)', labelpad=10)
+    ax.set_ylabel('Log(Total Orders)', labelpad=10)
+    ax.set_zlabel('Log(Avg Order Value)', labelpad=25)
+    ax.set_title('Phân bố 4 cụm Khách hàng trong không gian 3D (Log Scale)', fontsize=15, fontweight='bold', pad=25)
 
-    # Hiển thị chú thích
-    ax.legend(title="Clusters", bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
+    # Hiển thị chú thích (Legend)
+    ax.legend(title="Phân khúc khách hàng", bbox_to_anchor=(1.1, 0.9), loc='upper left', fontsize=11)
+    
+    # Xoay góc nhìn 3D
+    ax.view_init(elev=20, azim=45) 
+
+    fig.tight_layout()
+
+    # 5. Lưu và hiển thị ảnh
     if save_path:
         save(save_path)
+        
+    plt.show()
+
+def plot_elbow_method(df_scaled, max_k=10, optimal_k=4, save_path=None):
+    """
+    Hàm vẽ biểu đồ Khuỷu tay (Elbow) để chứng minh số cụm tối ưu.
+    Tham số:
+        - df_scaled: Dữ liệu đã qua chuẩn hóa StandardScaler (đầu ra của hàm preprocess).
+        - max_k: Số lượng cụm tối đa muốn thử nghiệm (mặc định là 10).
+        - optimal_k: Điểm K tối ưu để vẽ đường dóng màu đỏ nhấn mạnh.
+    """
+    wcss = []
+    K_range = range(1, max_k + 1)
+    
+    print("🔄 Đang tính toán WCSS cho các giá trị K...")
+    for k in K_range:
+        # Chạy K-Means với từng giá trị K
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        kmeans.fit(df_scaled)
+        
+        # inertia_ chính là tổng bình phương khoảng cách từ các điểm đến tâm cụm (WCSS)
+        wcss.append(kmeans.inertia_)
+        
+    plt.figure(figsize=(10, 6))
+    sns.set_theme(style="whitegrid") # Giao diện lưới khoa học
+    
+    # Vẽ đường line chính
+    sns.lineplot(x=K_range, y=wcss, marker='o', color='#2874A6', linewidth=2.5, markersize=8)
+    
+    # Thêm đường kẻ dọc đứt nét màu đỏ để nhấn mạnh K tối ưu
+    if optimal_k in K_range:
+        plt.axvline(x=optimal_k, color='red', linestyle='--', linewidth=2, 
+                    label=f'Điểm khuỷu tay K = {optimal_k}')
+        
+        # Thêm text chú thích ngay tại điểm gập
+        plt.text(optimal_k + 0.2, wcss[optimal_k-1], 'K tối ưu', color='red', fontsize=12, fontweight='bold')
+
+    # Trang trí biểu đồ
+    plt.title('Phương pháp Elbow giúp xác định số cụm tối ưu', fontsize=14, fontweight='bold', pad=15)
+    plt.xlabel('Số lượng phân khúc (K)', fontsize=12)
+    plt.ylabel('Hàm mất mát WCSS (Inertia)', fontsize=12)
+    plt.xticks(K_range) # Ép trục X hiện đủ các số nguyên từ 1 đến 10
+    plt.legend()
+    
+    plt.tight_layout()
+    if (save_path):
+        save(save_path)
+    plt.show()
+
+def plot_silhouette_score(df_scaled, max_k=10, save_path=None):
+    """
+    Hàm vẽ biểu đồ Silhouette Score để đánh giá chất lượng phân cụm.
+    Lưu ý: Tính toán Silhouette Score có độ phức tạp cao, nếu dữ liệu lớn (>50k dòng) sẽ hơi tốn thời gian.
+    """
+    silhouette_scores = []
+    K_range = range(2, max_k + 1) # Bắt buộc chạy từ 2
+    
+    print("🔄 Đang tính toán Silhouette Score cho các giá trị K...")
+    for k in K_range:
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        # Gán nhãn cho từng điểm dữ liệu
+        cluster_labels = kmeans.fit_predict(df_scaled)
+        
+        # Tính điểm Silhouette trung bình cho toàn bộ tập dữ liệu
+        score = silhouette_score(df_scaled, cluster_labels, sample_size=5000, random_state=42)
+        silhouette_scores.append(score)
+        print(f"✔️ K={k} | Silhouette Score: {score:.4f}")
+        
+    plt.figure(figsize=(10, 6))
+    sns.set_theme(style="whitegrid")
+    
+    # Vẽ đường line chính (dùng màu xanh lá mạ cho khác biệt với Elbow)
+    sns.lineplot(x=K_range, y=silhouette_scores, marker='s', color='#27AE60', linewidth=2.5, markersize=8)
+    
+    # Tìm giá trị K đạt điểm Silhouette cao nhất
+    max_score = max(silhouette_scores)
+    optimal_k = K_range[silhouette_scores.index(max_score)]
+    
+    # Thêm đường kẻ dọc đứt nét màu đỏ tại K đạt đỉnh
+    plt.axvline(x=optimal_k, color='red', linestyle='--', linewidth=2, 
+                label=f'K tối ưu (Điểm cao nhất) = {optimal_k}')
+    
+    # Thêm text chú thích ngay tại đỉnh
+    plt.text(optimal_k + 0.2, max_score, f'Max: {max_score:.3f}', color='red', fontsize=12, fontweight='bold')
+
+    # Trang trí biểu đồ
+    plt.title('Hệ số Silhouette theo số cụm K', fontsize=14, fontweight='bold', pad=15)
+    plt.xlabel('Số cụm K', fontsize=12)
+    plt.ylabel('Hệ số Silhouette', fontsize=12)
+    plt.xticks(K_range) 
+    plt.legend()
+    
+    plt.tight_layout()
+    if (save_path):
+        save(save_path)
+    plt.show()
+
+
+def plot_rfm_radar_chart(summary_df: pd.DataFrame, save_path=None):
+    """
+    Hàm vẽ biểu đồ Radar (Mạng nhện) so sánh 3 trục R-F-M của các phân khúc.
+    Đã cập nhật: Sử dụng avg_order_value thay cho total_spend để tránh đa cộng tuyến.
+    """
+    # 1. Cập nhật rfm_cols: Dùng avg_order_value làm đại diện cho Monetary
+    rfm_cols = ['recency', 'total_orders', 'avg_order_value']
+    
+    # Kiểm tra xem các cột này có thực sự tồn tại trong summary_df chưa
+    for col in rfm_cols:
+        if col not in summary_df.columns:
+            print(f"Lỗi: Không tìm thấy cột '{col}' trong dữ liệu summary!")
+            return
+
+    # 2. Chuẩn hóa dữ liệu về thang [0, 1]
+    scaler = MinMaxScaler()
+    df_radar = pd.DataFrame(scaler.fit_transform(summary_df[rfm_cols]), columns=rfm_cols)
+    
+    # Nghịch đảo trục Recency (Càng thấp càng tốt -> Càng phình to trên Radar)
+    df_radar['recency'] = 1 - df_radar['recency']
+    
+    # Đổi tên trục cho Radar Chart
+    categories = ['Độ mới\n(recency)', 'Tần suất\n(total_orders)', 'Giá trị TB Đơn\n(avg_order_value)']
+    num_vars = len(categories)
+
+    # 3. Tính góc
+    angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+    angles += angles[:1] # Khép kín
+
+    # 4. Vẽ Radar
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+    colors = ['#E74C3C', '#27AE60', '#F1C40F', '#34495E']
+    
+    # Lấy tên cụm tự động từ index của summary_df (nếu có), hoặc dùng mặc định
+    labels = [f"Cụm {i}" for i in range(len(summary_df))]
+
+    for i in range(len(df_radar)):
+        values = df_radar.iloc[i].tolist()
+        values += values[:1]
+        
+        ax.plot(angles, values, color=colors[i % len(colors)], linewidth=2.5, linestyle='solid', label=labels[i])
+        ax.fill(angles, values, color=colors[i % len(colors)], alpha=0.15)
+
+    # 5. Trang trí
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(categories, fontsize=12, fontweight='bold')
+    ax.set_yticklabels([])
+    
+    plt.title('Hồ sơ Phân khúc Khách hàng RFM (Radar Chart)', size=16, fontweight='bold', y=1.1)
+    plt.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize=11)
+    
+    plt.tight_layout()
+    
+    # Lưu file nếu có đường dẫn
+    if save_path:
+        save(save_path)
+        
     plt.show()

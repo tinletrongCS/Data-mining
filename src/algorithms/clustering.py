@@ -24,9 +24,6 @@ class KMeansSegmentation:
         valid_cols = [col for col in self.rfm_attributes if col in self.df_processed.columns]
         df_rfm = self.df_processed[valid_cols].copy()
 
-        # df_rfm['total_spend_log'] = np.log1p(df_rfm['total_spend'])
-        # df_rfm['avg_order_value_log'] = np.log1p(df_rfm['avg_order_value'])
-        # df_rfm['total_orders_log'] = np.log1p(df_rfm['total_orders'])
         if 'total_spend' in df_rfm.columns:
             df_rfm['total_spend_log'] = np.log1p(df_rfm['total_spend'])
         if 'avg_order_value' in df_rfm.columns:
@@ -78,7 +75,6 @@ class KMeansSegmentation:
         # Tìm loại đá quý (gem) yêu thích nhất của từng cụm
         top_gems = []
         for cluster_id in summary.index:
-            # Lấy tất cả list đá quý của cụm này
             cluster_gems = self.df_processed[self.df_processed['cluster'] == cluster_id]['favorite_gems']
 
             # Gom tất cả list lại thành 1 list
