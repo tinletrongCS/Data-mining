@@ -20,8 +20,8 @@ export default function SilhouetteChart() {
           label={{ value: 'Số cụm K', position: 'insideBottom', offset: -5, fill: '#475569', fontSize: 11 }} />
         <YAxis domain={[0.28, 0.46]} tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
         <Tooltip content={<Tip />} />
-        <ReferenceLine x={4} stroke="#22c55e" strokeDasharray="5 3"
-          label={{ value: 'K=4 cao nhất', position: 'top', fill: '#22c55e', fontSize: 11 }} />
+        <ReferenceLine x={5} stroke="#22c55e" strokeDasharray="5 3"
+          label={{ value: 'K=5 cao nhất', position: 'top', fill: '#22c55e', fontSize: 11 }} />
         <Line type="monotone" dataKey="score" stroke="#22c55e" strokeWidth={2.5}
           dot={{ fill: '#22c55e', r: 4, strokeWidth: 0 }}
           activeDot={{ r: 6, fill: '#22c55e', stroke: 'rgba(34,197,94,0.3)', strokeWidth: 4 }} />
