@@ -5,6 +5,7 @@ const navItems = [
   { to: '/temporal',   icon: '📅', label: 'Thời gian' },
   { to: '/clustering', icon: '🔮', label: 'Phân cụm' },
   { to: '/comparison', icon: '⚖️', label: 'So sánh' },
+  { to: '/association-rules', icon: '🛒', label: 'Luật kết hợp' }, // <-- Thêm dòng này
 ]
 
 export default function Navbar() {
@@ -31,9 +32,13 @@ export default function Navbar() {
       <div className="nav-footer">
         <div>Dataset</div>
         <span>Jewelry E-Commerce</span>
-        <div>Oct 2019 – Feb 2020</div>
+        <div>Dec 2018 - Dec 2021</div>
         <div style={{ marginTop: 6 }}>Model</div>
-        <span>KMeans (K=4)</span>
+        <span>KMeans (K=4)</span><br />
+
+        <span>Apriori</span><br />
+
+        <span>FP-Growth</span><br />
       </div>
     </nav>
   )

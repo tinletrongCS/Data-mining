@@ -14,7 +14,7 @@ const Tip = ({ active, payload }) => {
 export default function ElbowChart() {
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <LineChart data={elbowData} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
+      <LineChart data={elbowData} margin={{ top: 30, right: 20, left: 10, bottom: 10 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="k" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false}
           label={{ value: 'Số cụm K', position: 'insideBottom', offset: -5, fill: '#475569', fontSize: 11 }} />

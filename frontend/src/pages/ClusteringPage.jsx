@@ -6,7 +6,13 @@ import RFMRadarChart from '../components/charts/RFMRadarChart'
 import ClusterBarComparison from '../components/charts/ClusterBarComparison'
 import { clusterProfiles } from '../data/mockData'
 
-const PROFILE_ICONS = ['⚠️','🟢','⭐','👑']
+// Định nghĩa Metadata để tự động gán nhãn và màu sắc dựa trên tên cụm từ dữ liệu
+const CLUSTER_META = {
+  'VIP':       { icon: '👑', color: '#3b82f6', nameVi: 'VIP' },
+  'Loyal':     { icon: '⭐', color: '#eab308', nameVi: 'Loyal' },
+  'Regular':   { icon: '🟢', color: '#22c55e', nameVi: 'Regular' },
+  'At Risk':   { icon: '⚠️', color: '#ef4444', nameVi: 'At Risk' },
+};
 
 export default function ClusteringPage() {
   return (
@@ -18,17 +24,29 @@ export default function ClusteringPage() {
 
       {/* Cluster profile cards */}
       <div className="cluster-cards">
-        {clusterProfiles.map((p, i) => (
-          <div key={p.id} className="cluster-card">
-            <div className="cluster-card-bar" style={{ background: p.color }} />
-            <div style={{ fontSize: 20, marginBottom: 8 }}>{PROFILE_ICONS[i]}</div>
-            <div className="cluster-card-name">{PROFILE_ICONS[i]} {p.nameVi}</div>
-            <div className="cluster-card-sub">{p.user_count.toLocaleString()} khách hàng</div>
-            <div className="cluster-stat">Recency <span>{p.recency} ngày</span></div>
-            <div className="cluster-stat">Đơn hàng <span>{p.total_orders}</span></div>
-            <div className="cluster-stat">AOV <span>${p.avg_order_value}</span></div>
-          </div>
-        ))}
+        {clusterProfiles.map((p) => {
+          // Lấy metadata dựa trên tên tiếng Anh (VIP, Loyal...) được Python gán
+          const meta = CLUSTER_META[p.name] || { icon: '❓', color: '#94a3b8', nameVi: 'Chưa xác định' };
+          
+          return (
+            <div key={p.id} className="cluster-card">
+              {/* Sử dụng màu sắc từ CLUSTER_META */}
+              <div className="cluster-card-bar" style={{ background: meta.color }} />
+              
+              <div style={{ fontSize: 24, marginBottom: 8 }}>{meta.icon}</div>
+              
+              <div className="cluster-card-name" style={{ color: meta.color, fontWeight: 'bold' }}>
+                {meta.nameVi}
+              </div>
+              
+              <div className="cluster-card-sub">{p.user_count.toLocaleString()} khách hàng</div>
+              
+              <div className="cluster-stat">Recency <span>{p.recency} ngày</span></div>
+              <div className="cluster-stat">Đơn hàng <span>{p.total_orders}</span></div>
+              <div className="cluster-stat">AOV <span>${p.avg_order_value}</span></div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="charts-grid grid-2">

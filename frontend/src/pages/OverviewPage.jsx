@@ -9,15 +9,15 @@ export default function OverviewPage() {
     <div className="fade-up">
       <div className="page-header">
         <h1>📊 Tổng quan dữ liệu</h1>
-        <p>Phân tích tổng hợp dataset Jewelry E-Commerce · {kpiData.dateRange}</p>
+        <p>Phân tích tổng hợp Dataset Jewelry E-Commerce · {kpiData.dateRange}</p>
       </div>
 
       <div className="stats-grid">
-        <StatCard icon="🛍️" label="Tổng đơn hàng" value={kpiData.totalOrders.toLocaleString()} sub="trong 5 tháng" />
+        <StatCard icon="🛍️" label="Tổng đơn hàng" value={kpiData.totalOrders.toLocaleString()} sub="trong 3 năm" />
         <StatCard icon="💰" label="Doanh thu" value={`$${(kpiData.totalRevenue/1e6).toFixed(2)}M`} sub="USD" />
-        <StatCard icon="👥" label="Khách hàng" value={kpiData.uniqueCustomers.toLocaleString()} sub="unique users" />
+        <StatCard icon="👥" label="Khách hàng" value={kpiData.uniqueCustomers.toLocaleString()} sub="Unique Users" />
         <StatCard icon="🧾" label="AOV" value={`$${kpiData.avgOrderValue}`} sub="Avg Order Value" />
-        <StatCard icon="💎" label="Sản phẩm" value={kpiData.totalProducts.toLocaleString()} sub="SKUs" />
+        <StatCard icon="💎" label="Sản phẩm" value={kpiData.totalProducts.toLocaleString()} sub="Total Products" />
       </div>
 
       <div className="charts-grid grid-2">
@@ -28,19 +28,19 @@ export default function OverviewPage() {
           className="span-2"
         >
           <PriceHistogram />
-          <div style={{ marginTop: 10, fontSize: 12, color: '#475569' }}>
+          {/* <div style={{ marginTop: 10, fontSize: 12, color: '#475569' }}>
             💡 Giá tập trung ở vùng $75–$200. Đuôi dài về phía phải cho thấy có một số sản phẩm cao cấp.
-          </div>
-        </ChartCard>
-
-        <ChartCard title="Top 10 danh mục bán chạy" subtitle="Theo số lượng giao dịch">
-          <TopCategoriesBar data={topCategories} />
-        </ChartCard>
-
-        <ChartCard title="Top 10 thương hiệu" subtitle="Theo số lượng giao dịch">
-          <TopCategoriesBar data={topBrands} />
+          </div> */}
         </ChartCard>
       </div>
+
+
+      <div className="charts-grid grid-2" >
+       <ChartCard title="Top 10 danh mục bán chạy" subtitle="Theo số lượng giao dịch" className="span-2" style={{ height: '1000px' }}>
+          <TopCategoriesBar data={topCategories} />
+        </ChartCard>
+      </div>
+      
     </div>
   )
 }
