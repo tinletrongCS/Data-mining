@@ -1,0 +1,54 @@
+{
+  "benchmark": {
+    "apriori": {
+      "time_sec": 0.2216,
+      "memory_mb": 3.92,
+      "itemsets": 12,
+      "rules": 2
+    },
+    "fpgrowth": {
+      "time_sec": 1.7056,
+      "memory_mb": 3.86,
+      "itemsets": 12,
+      "rules": 2
+    },
+    "fpgrowth_super": {
+      "time_sec": 1.7685,
+      "memory_mb": 4.89,
+      "itemsets": 26,
+      "rules": 2
+    }
+  },
+  "top_rules_standard": [
+    {
+      "antecedents": "earring",
+      "consequents": "pendant, ring",
+      "support": 0.0041,
+      "confidence": 0.0105,
+      "lift": 1.0223
+    },
+    {
+      "antecedents": "pendant, ring",
+      "consequents": "earring",
+      "support": 0.0041,
+      "confidence": 0.4003,
+      "lift": 1.0223
+    }
+  ],
+  "top_rules_super": [
+    {
+      "antecedents": "ring, necklace",
+      "consequents": "earring",
+      "support": 0.0007,
+      "confidence": 0.4839,
+      "lift": 1.2357
+    },
+    {
+      "antecedents": "pendant, ring",
+      "consequents": "earring",
+      "support": 0.0041,
+      "confidence": 0.4003,
+      "lift": 1.0223
+    }
+  ]
+}

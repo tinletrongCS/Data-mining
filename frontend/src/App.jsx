@@ -4,6 +4,7 @@ import OverviewPage from './pages/OverviewPage'
 import TemporalPage from './pages/TemporalPage'
 import ClusteringPage from './pages/ClusteringPage'
 import ComparisonPage from './pages/ComparisonPage'
+import AssociationRulesPage from './pages/AssociationRulesPage'
 import './index.css'
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route path="/temporal" element={<TemporalPage />} />
             <Route path="/clustering" element={<ClusteringPage />} />
             <Route path="/comparison" element={<ComparisonPage />} />
+            <Route path="/association-rules" element={<AssociationRulesPage />} />
           </Routes>
         </main>
       </div>

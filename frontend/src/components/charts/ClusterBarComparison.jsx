@@ -2,10 +2,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { clusterMeans, clusterProfiles } from '../../data/mockData'
 
 const CLUSTER_COLORS = ['#ef4444', '#22c55e', '#eab308', '#3b82f6']
-
+const NAMEBYCO = { 0:'At Risk', 1: 'Regular', 2:'Loyal', 3: 'VIP'}
 const buildData = (key) =>
   clusterProfiles.map((p, i) => ({
-    name: `Cụm ${i}`,
+    name: NAMEBYCO[i],
     value: clusterMeans[key][i],
     color: CLUSTER_COLORS[i],
   }))

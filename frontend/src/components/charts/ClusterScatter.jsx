@@ -44,7 +44,7 @@ export default function ClusterScatterChart() {
         {clusterProfiles.map(p => (
           <div key={p.id} className="legend-item">
             <div className="legend-dot" style={{ background: p.color }} />
-            Cụm {p.id}: {p.nameVi}
+            {p.name}
           </div>
         ))}
       </div>
