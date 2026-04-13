@@ -1,7 +1,38 @@
+# Môi trường ảo
 .venv
-src/tempCodeRunnerFile.py
+.venv*
+venv
+env/
+*.env
 
+# Rác biên dịch
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
+# Cấu hình editor cục bộ
 .vscode/
+*.code-workspace
+
+# File tạm
+src/tempCodeRunnerFile.py
+
+# Các file do jupytext sinh ra
+notebooks/*.py
+.ipynb_checkpoints/
+*.py
+# Ngoại lệ
+!run_preprocessing.py
+!models/**/*.py
+!src/**/*.py
+
+# Quy trình sao lưu code
+Makefile
+
+# Đồng bộ phiên bản
+pip freeze > requirements.txt
+
+# Không push các file .pkl lên
+data/processed
+*.pkl
